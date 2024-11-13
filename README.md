@@ -117,25 +117,25 @@ This ERD represents the database that students will create for this project. Stu
 
 **IMPORTANT:** The `User` entity will also need to use an `@Table(name=<newName>)` annotation to give its table a different name as `user` is a reserved keyword in PostgreSQL.
 
-## API Data Types
+## Data Transfer Objects
 The semantics of the operations exposed by the API endpoints themselves are discussed in the following section, but in this section, the API data model is defined and the conceptual model for the application is explained in some depth. Additionally, some hints and constraints for the database model are discussed here.
 
 In general, the data types defined here are in their general, read-only forms. That means that these are the versions of the models that are returned by `GET` operations or nested inside other objects as auxiliary data. Most `POST` operations, which often create new records in the database, require specialized versions of these models. Those special cases are covered by the endpoint specifications themselves unless otherwise noted.
 
-### User
+### UserResponseDto
 A user of the application. The `username` must be unique. The `joined` timestamp should be assigned when the user is first created, and must never be updated.
 ```javascript
-{ // User
+{ // UserResponseDto
   username: 'string',
-  profile: 'Profile',
+  profile: 'ProfileDto',
   joined: 'timestamp'
 }
 ```
 
-### Profile
+### ProfileDto
 A user's profile information. Only the `email` property is required.
 ```javascript
-{ // Profile
+{ // ProfileDto
   firstName?: 'string',
   lastName?: 'string',
   email: 'string',
@@ -143,26 +143,26 @@ A user's profile information. Only the `email` property is required.
 }
 ```
 
-### Credentials
+### CredentialsDto
 A user's credentials. These are mostly used for validation and authentication during operations specific to a user. Passwords are plain text for the sake of academic simplicity, and it should be kept in mind that this is never appropriate in the real world.
 ```javascript
-{ // Credentials
+{ // CredentialsDto
   username: 'string',
   password: 'string'
 }
 ```
 
-### Hashtag
+### HashtagDto
 A hashtag associated with tweets that contain its label. The `label` property must be unique, but is case-insensitive. The `firstUsed` timestamp should be assigned on creation, and must never be updated. The `lastUsed` timestamp should be updated every time a new tweet is tagged with the hashtag.
 ```javascript
-{ // Hashtag
+{ // HashtagDto
   label: 'string',
   firstUsed: 'timestamp',
   lastUsed: 'timestamp'
 }
 ```
 
-## Tweet
+## TweetResponseDto
 A tweet posted by a user. The `posted` timestamp should be assigned when the tweet is first created, and must not be updated.
 
 There are three distinct variations of tweets: simple, repost, and reply.
@@ -171,25 +171,25 @@ There are three distinct variations of tweets: simple, repost, and reply.
 - A reply has `content` and `inReplyTo` values, but no `repostOf` value
 
 ```javascript
-{ // Tweet
+{ // TweetResponseDto
   id: 'integer'
-  author: 'User',
+  author: 'UserResponseDto',
   posted: 'timestamp',
   content?: 'string',
-  inReplyTo?: 'Tweet',
-  repostOf?: 'Tweet'
+  inReplyTo?: 'TweetResponseDto',
+  repostOf?: 'TweetResponseDto'
 }
 ```
 
-### Context
+### ContextDto
 The reply context of a tweet. The `before` property represents the chain of replies that led to the `target` tweet, and the `after` property represents the chain of replies that followed the `target` tweet.
 
 The chains should be in chronological order, and the `after` chain should include all replies of replies, meaning that all branches of replies must be flattened into a single chronological list to fully satisfy the requirements.
 ```javascript
-{ // Context
-  target: 'Tweet',
-  before: ['Tweet'],
-  after: ['Tweet']
+{ // ContextDto
+  target: 'TweetResponseDto',
+  before: ['TweetResponseDto'],
+  after: ['TweetResponseDto']
 }
 ```
 
@@ -224,7 +224,7 @@ Retrieves all active (non-deleted) users as an array.
 
 #### Response
 ```javascript
-['User']
+['UserResponseDto']
 ```
 
 ### `POST    users`
@@ -234,15 +234,15 @@ If the given credentials match a previously-deleted user, re-activate the delete
 
 #### Request
 ```javascript
-{
-  credentials: 'Credentials',
-  profile: 'Profile'
+{ // UserRequestDto
+  credentials: 'CredentialsDto',
+  profile: 'ProfileDto'
 }
 ```
 
 #### Response
 ```javascript
-'User'
+'UserResponseDto'
 ```
 
 ### `GET     users/@{username}`
@@ -250,7 +250,7 @@ Retrieves a user with the given username. If no such user exists or is deleted, 
 
 #### Response
 ```javascript
-'User'
+'UserResponseDto'
 ```
 
 
@@ -259,15 +259,15 @@ Updates the profile of a user with the given username. If no such user exists, t
 
 #### Request
 ```javascript
-{
-  credentials: 'Credentials',
-  profile: 'Profile'
+{ // UserRequestDto
+  credentials: 'CredentialsDto',
+  profile: 'ProfileDto'
 }
 ```
 
 #### Response
 ```javascript
-'User'
+'UserResponseDto'
 ```
 
 ### `DELETE  users/@{username}`
@@ -277,12 +277,12 @@ Updates the profile of a user with the given username. If no such user exists, t
 
 #### Request
 ```javascript
-'Credentials'
+'CredentialsDto'
 ```
 
 #### Response
 ```javascript
-'User'
+'UserResponseDto'
 ```
 
 ### `POST    users/@{username}/follow`
@@ -290,7 +290,7 @@ Subscribes the user whose credentials are provided by the request body to the us
 
 #### Request
 ```javascript
-'Credentials'
+'CredentialsDto'
 ```
 
 ### `POST    users/@{username}/unfollow`
@@ -298,7 +298,7 @@ Unsubscribes the user whose credentials are provided by the request body from th
 
 #### Request
 ```javascript
-'Credentials'
+'CredentialsDto'
 ```
 
 ### `GET     users/@{username}/feed`
@@ -306,7 +306,7 @@ Retrieves all (non-deleted) tweets authored by the user with the given username,
 
 #### Response
 ```javascript
-['Tweet']
+['TweetResponseDto']
 ```
 
 ### `GET     users/@{username}/tweets`
@@ -314,7 +314,7 @@ Retrieves all (non-deleted) tweets authored by the user with the given username.
 
 #### Response
 ```javascript
-['Tweet']
+['TweetResponseDto']
 ```
 
 ### `GET     users/@{username}/mentions`
@@ -324,7 +324,7 @@ A user is considered "mentioned" by a tweet if the tweet has `content` and the u
 
 #### Response
 ```javascript
-['Tweet']
+['TweetResponseDto']
 ```
 
 ### `GET     users/@{username}/followers`
@@ -332,7 +332,7 @@ Retrieves the followers of the user with the given username. Only active users s
 
 #### Response
 ```javascript
-['User']
+['UserResponseDto']
 ```
 
 ### `GET     users/@{username}/following`
@@ -340,7 +340,7 @@ Retrieves the users followed by the user with the given username. Only active us
 
 #### Response
 ```javascript
-['User']
+['UserResponseDto']
 ```
 
 ### `GET     tags`
@@ -348,7 +348,7 @@ Retrieves all hashtags tracked by the database.
 
 #### Response
 ```javascript
-['Hashtag']
+['HashtagDto']
 ```
 
 ### `GET     tags/{label}`
@@ -358,7 +358,7 @@ A tweet is considered "tagged" by a hashtag if the tweet has `content` and the h
 
 #### Response
 ```javascript
-['Tweet']
+['TweetResponseDto']
 ```
 
 ### `GET     tweets`
@@ -366,7 +366,7 @@ Retrieves all (non-deleted) tweets. The tweets should appear in reverse-chronolo
 
 #### Response
 ```javascript
-['Tweet']
+['TweetResponseDto']
 ```
 
 ### `POST    tweets`
@@ -380,15 +380,15 @@ Because this always creates a simple tweet, it must have a `content` property an
 
 #### Request
 ```javascript
-{
+{ // TweetRequestDto
   content: 'string',
-  credentials: 'Credentials'
+  credentials: 'CredentialsDto'
 }
 ```
 
 #### Response
 ```javascript
-'Tweet'
+'TweetResponseDto'
 ```
 
 ### `GET     tweets/{id}`
@@ -396,7 +396,7 @@ Retrieves a tweet with a given id. If no such tweet exists, or the given tweet i
 
 #### Response
 ```javascript
-'Tweet'
+'TweetResponseDto'
 ```
 
 ### `DELETE  tweets/{id}`
@@ -406,12 +406,12 @@ Retrieves a tweet with a given id. If no such tweet exists, or the given tweet i
 
 #### Request
 ```javascript
-'Credentials'
+'CredentialsDto'
 ```
 
 #### Response
 ```javascript
-'Tweet'
+'TweetResponseDto'
 ```
 
 ### `POST    tweets/{id}/like`
@@ -419,7 +419,7 @@ Creates a "like" relationship between the tweet with the given id and the user w
 
 #### Request
 ```javascript
-'Credentials'
+'CredentialsDto'
 ```
 
 ### `POST    tweets/{id}/reply`
@@ -433,15 +433,15 @@ The response should contain the newly-created tweet.
 
 #### Request
 ```javascript
-{
+{ // TweetRequestDto
   content: 'string',
-  credentials: 'Credentials'
+  credentials: 'CredentialsDto'
 }
 ```
 
 #### Response
 ```javascript
-'Tweet'
+'TweetResponseDto'
 ```
 
 ### `POST    tweets/{id}/repost`
@@ -453,12 +453,12 @@ The response should contain the newly-created tweet.
 
 #### Request
 ```javascript
-'Credentials'
+'CredentialsDto'
 ```
 
 #### Response
 ```javascript
-'Tweet'
+'TweetResponseDto'
 ```
 
 ### `GET     tweets/{id}/tags`
@@ -468,7 +468,7 @@ Retrieves the tags associated with the tweet with the given id. If that tweet is
 
 #### Response
 ```javascript
-['Hashtag']
+['HashtagDto']
 ```
 
 ### `GET     tweets/{id}/likes`
@@ -478,7 +478,7 @@ Deleted users should be excluded from the response.
 
 #### Response
 ```javascript
-['User']
+['UserResponseDto']
 ```
 
 ### `GET     tweets/{id}/context`
@@ -488,7 +488,7 @@ Retrieves the context of the tweet with the given id. If that tweet is deleted o
 
 #### Response
 ```javascript
-'Context'
+'ContextDto'
 ```
 
 ### `GET     tweets/{id}/replies`
@@ -498,7 +498,7 @@ Deleted replies to the tweet should be excluded from the response.
 
 #### Response
 ```javascript
-['Tweet']
+['TweetResponseDto']
 ```
 
 ### `GET     tweets/{id}/reposts`
@@ -508,7 +508,7 @@ Deleted reposts of the tweet should be excluded from the response.
 
 #### Response
 ```javascript
-['Tweet']
+['TweetResponseDto']
 ```
 
 ### `GET     tweets/{id}/mentions`
@@ -520,5 +520,5 @@ Deleted users should be excluded from the response.
 
 #### Response
 ```javascript
-['User']
+['UserResponseDto']
 ```
