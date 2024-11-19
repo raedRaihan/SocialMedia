@@ -1,5 +1,6 @@
 package com.cooksys.twitter_api.entities;
 
+import java.security.Timestamp;
 import java.util.List;
 
 import org.antlr.v4.runtime.misc.NotNull;
@@ -28,10 +29,10 @@ public class Tweet {
 	
 	//foreign key
 	@ManyToOne
-	@JoinColumn(name="author",nullable = false)
-	private int author;
+	@JoinColumn(name="author",referencedColumnName = "user_id", nullable = false)
+	private User author;
 	
-	private String timestamp;
+	private Timestamp timestamp;
 	
 	private boolean deleted;
 	
@@ -39,17 +40,21 @@ public class Tweet {
 	
 	//foreign key
 	@ManyToOne
-	@JoinColumn(name = "inReplyTo", referencedColumnName = "id")
-	private int inReplyTo;
+	@JoinColumn(name = "inReplyTo", referencedColumnName = "tweet_id")
+	private Tweet inReplyTo;
 	
 	//foreign key
 	@ManyToOne
-	@JoinColumn(name = "repostOf", referencedColumnName = "id")
-	private int repostOf;
+	@JoinColumn(name = "repostOf", referencedColumnName = "tweet_id")
+	private Tweet repostOf;
 	
 	@ManyToMany
 	@JoinTable(name = "user_likes", joinColumns = @JoinColumn(name = "tweet_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
 	private List<User> usersWhoLiked;
+	
+	@ManyToMany
+	@JoinTable(name = "user_mentions", joinColumns = @JoinColumn(name = "tweet_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+	private List<User> mentionedUsers;
 	
 
 }
