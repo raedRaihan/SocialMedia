@@ -19,39 +19,54 @@ import lombok.NoArgsConstructor;
 @Data
 public class Tweet {
 
-	@Id
-	@GeneratedValue
-	@Column(name = "tweet_id")
-	private Long id;
-	
-	//foreign key
-	@ManyToOne
-	@JoinColumn(name="author",referencedColumnName = "user_id", nullable = false)
-	private User author;
-	
-	private Timestamp timestamp;
-	
-	private boolean deleted;
-	
-	private String content;
-	
-	//foreign key
-	@ManyToOne
-	@JoinColumn(name = "inReplyTo")
-	private Tweet inReplyTo;
-	
-	//foreign key
-	@ManyToOne
-	@JoinColumn(name = "repostOf")
-	private Tweet repostOf;
-	
-	@ManyToMany
-	@JoinTable(name = "user_likes", joinColumns = @JoinColumn(name = "tweet_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-	private List<User> usersWhoLiked;
-	
-	@ManyToMany
-	@JoinTable(name = "user_mentions", joinColumns = @JoinColumn(name = "tweet_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-	private List<User> mentionedUsers;
-	
-
+    @Id
+    @GeneratedValue
+    @Column(name = "tweet_id")
+    private Long id;
+    
+    // Foreign key
+    @ManyToOne
+    @JoinColumn(name = "author", referencedColumnName = "user_id", nullable = false)
+    private User author;
+    
+    private Timestamp timestamp;
+    
+    private boolean deleted;
+    
+    private String content;
+    
+    // Foreign key
+    @ManyToOne
+    @JoinColumn(name = "inReplyTo")
+    private Tweet inReplyTo;
+    
+    // Foreign key
+    @ManyToOne
+    @JoinColumn(name = "repostOf")
+    private Tweet repostOf;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "user_likes", 
+        joinColumns = @JoinColumn(name = "tweet_id"), 
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> usersWhoLiked;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "user_mentions", 
+        joinColumns = @JoinColumn(name = "tweet_id"), 
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> mentionedUsers;
+    
+    // New Many-to-Many relationship for hashtags
+    @ManyToMany
+    @JoinTable(
+        name = "tweet_hashtags", // Make sure this matches the join table used in the Hashtag entity
+        joinColumns = @JoinColumn(name = "tweet_id"),
+        inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    private List<Hashtag> hashtags; // List of hashtags associated with the tweet
 }

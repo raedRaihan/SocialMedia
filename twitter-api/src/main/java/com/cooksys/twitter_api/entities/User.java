@@ -3,6 +3,8 @@ package com.cooksys.twitter_api.entities;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -24,14 +26,10 @@ public class User {
 
     @Id
     @GeneratedValue
+	@Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
-
-    @Column(nullable = false)
-    private String password;
-
+    @CreationTimestamp
     private Timestamp joined;
 
     private boolean deleted;
@@ -39,7 +37,10 @@ public class User {
     @Embedded
     private Profile profile;
 
-	@OneToMany(mappedBy = "author") // Maps to the 'author' field in the Tweet entity.
+    @Embedded
+    private Credentials credentials; // Embedded Credentials
+
+    @OneToMany(mappedBy = "author") // Maps to the 'author' field in the Tweet entity.
     private List<Tweet> authoredTweets; // List of tweets authored by this user.
 
     @ManyToMany
@@ -48,10 +49,10 @@ public class User {
         joinColumns = @JoinColumn(name = "follower_id"),
         inverseJoinColumns = @JoinColumn(name = "following_id")
     )
-    private List<User> following; // list of user objects that the current user instance is following
+    private List<User> following; // List of user objects that the current user instance is following
 
     @ManyToMany(mappedBy = "following")
-    private List<User> followers;  // inverse side of self-referencing many to many relationship w user
+    private List<User> followers; // Inverse side of self-referencing many-to-many relationship with user
 
     @ManyToMany
     @JoinTable(
@@ -59,7 +60,7 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "tweet_id")
     )
-    private List<Tweet> likedTweets; // list of tweet objects that a user has liked
+    private List<Tweet> likedTweets; // List of tweet objects that a user has liked
 
     @ManyToMany
     @JoinTable(
@@ -67,5 +68,5 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "tweet_id")
     )
-    private List<Tweet> mentionedTweets; // list of tweet objects where a user is mentioned
+    private List<Tweet> mentionedTweets; // List of tweet objects where a user is mentioned
 }
