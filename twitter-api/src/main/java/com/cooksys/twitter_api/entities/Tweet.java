@@ -4,6 +4,7 @@ import java.security.Timestamp;
 import java.util.List;
 
 import org.antlr.v4.runtime.misc.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,20 +33,21 @@ public class Tweet {
 	@JoinColumn(name="author",referencedColumnName = "user_id", nullable = false)
 	private User author;
 	
+	@CreationTimestamp
 	private Timestamp timestamp;
 	
-	private boolean deleted;
+	private boolean deleted=false;
 	
 	private String content;
 	
 	//foreign key
 	@ManyToOne
-	@JoinColumn(name = "inReplyTo", referencedColumnName = "tweet_id")
+	@JoinColumn(name = "inReplyTo")
 	private Tweet inReplyTo;
 	
 	//foreign key
 	@ManyToOne
-	@JoinColumn(name = "repostOf", referencedColumnName = "tweet_id")
+	@JoinColumn(name = "repostOf")
 	private Tweet repostOf;
 	
 	@ManyToMany
