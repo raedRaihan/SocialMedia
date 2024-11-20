@@ -1,15 +1,27 @@
 package com.cooksys.twitter_api.controllers;
 
-import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.cooksys.twitter_api.dtos.UserResponseDto;
+import com.cooksys.twitter_api.services.UserService;
+
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
-    // Add constructor-based dependency injection for service here if needed
+    private final UserService userService;
 
-    // TODO: Implement user-related endpoints later
+    @GetMapping
+    public List<UserResponseDto> getAllActiveUsers() {
+        return userService.findByDeletedFalse();  // Call the service method to fetch users
+    }
 
 }

@@ -1,15 +1,21 @@
 package com.cooksys.twitter_api;
 
-import com.cooksys.twitter_api.entities.*;
-import com.cooksys.twitter_api.repositories.HashtagRepository;
-import com.cooksys.twitter_api.repositories.TweetRepository;
-import com.cooksys.twitter_api.repositories.UserRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.List;
+import com.cooksys.twitter_api.entities.Credentials;
+import com.cooksys.twitter_api.entities.Hashtag;
+import com.cooksys.twitter_api.entities.Profile;
+import com.cooksys.twitter_api.entities.Tweet;
+import com.cooksys.twitter_api.entities.User;
+import com.cooksys.twitter_api.repositories.HashtagRepository;
+import com.cooksys.twitter_api.repositories.TweetRepository;
+import com.cooksys.twitter_api.repositories.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -25,11 +31,11 @@ public class Seeder implements CommandLineRunner {
         // --- User 1 ---
         // Credentials
         Credentials user1Cred = new Credentials();
-        user1Cred.setUsername("therealmc");
+        user1Cred.setUsername("therealmc");  // Set the username in Credentials
         user1Cred.setPassword("Password");
 
         User user1 = new User();
-        user1.setCredentials(user1Cred);
+        user1.setCredentials(user1Cred);  // Set the Credentials object
 
         // Profile
         Profile user1Pro = new Profile();
@@ -45,11 +51,11 @@ public class Seeder implements CommandLineRunner {
         // --- User 2 ---
         // Credentials
         Credentials user2Cred = new Credentials();
-        user2Cred.setUsername("mario");
+        user2Cred.setUsername("mario");  // Set the username in Credentials
         user2Cred.setPassword("password");
 
         User user2 = new User();
-        user2.setCredentials(user2Cred);
+        user2.setCredentials(user2Cred);  // Set the Credentials object
 
         // Profile
         Profile user2Pro = new Profile();
@@ -58,17 +64,16 @@ public class Seeder implements CommandLineRunner {
         user2Pro.setEmail("mario@email.com");
         user2Pro.setPhone("234-567-8901");
         user2.setProfile(user2Pro);
-        // Deleted
         user2.setDeleted(false);
 
         // --- User 3 ---
-        Credentials user3Cred = new Credentials();
         // Credentials
-        user3Cred.setUsername("Luigi");
+        Credentials user3Cred = new Credentials();
+        user3Cred.setUsername("Luigi");  // Set the username in Credentials
         user3Cred.setPassword("Password");
 
         User user3 = new User();
-        user3.setCredentials(user3Cred);
+        user3.setCredentials(user3Cred);  // Set the Credentials object
 
         // Profile
         Profile user3Pro = new Profile();
@@ -77,17 +82,16 @@ public class Seeder implements CommandLineRunner {
         user3Pro.setEmail("luigi@email.com");
         user3Pro.setPhone("345-678-9012");
         user3.setProfile(user3Pro);
-        // Deleted
         user3.setDeleted(false);
 
         // --- User 4 ---
         // Credentials
         Credentials user4Cred = new Credentials();
-        user4Cred.setUsername("Nathan");
+        user4Cred.setUsername("Nathan");  // Set the username in Credentials
         user4Cred.setPassword("Password");
 
         User user4 = new User();
-        user4.setCredentials(user4Cred);
+        user4.setCredentials(user4Cred);  // Set the Credentials object
 
         // Profile
         Profile user4Pro = new Profile();
@@ -96,17 +100,16 @@ public class Seeder implements CommandLineRunner {
         user4Pro.setEmail("nathan@email.com");
         user4Pro.setPhone("456-789-0023");
         user4.setProfile(user4Pro);
-        // Deleted
         user4.setDeleted(false);
 
         // --- User 5 ---
         // Credentials
         Credentials user5Cred = new Credentials();
-        user5Cred.setUsername("Tarnished");
+        user5Cred.setUsername("Tarnished");  // Set the username in Credentials
         user5Cred.setPassword("Password");
 
         User user5 = new User();
-        user5.setCredentials(user5Cred);
+        user5.setCredentials(user5Cred);  // Set the Credentials object
 
         // Profile
         Profile user5Pro = new Profile();
@@ -115,17 +118,16 @@ public class Seeder implements CommandLineRunner {
         user5Pro.setEmail("willibecometheeldenlord@email.com");
         user5Pro.setPhone("567-890-0034");
         user5.setProfile(user5Pro);
-        // Deleted
         user5.setDeleted(false);
 
         // --- User 6 ---
         // Credentials
         Credentials deletedUserCred = new Credentials();
-        deletedUserCred.setUsername("DeletedUser");
+        deletedUserCred.setUsername("DeletedUser");  // Set the username in Credentials
         deletedUserCred.setPassword("Password");
 
         User deletedUser = new User();
-        deletedUser.setCredentials(deletedUserCred);
+        deletedUser.setCredentials(deletedUserCred);  // Set the Credentials object
 
         // Profile
         Profile deletedUserPro = new Profile();
@@ -134,8 +136,9 @@ public class Seeder implements CommandLineRunner {
         deletedUserPro.setEmail("Deleted@User.com");
         deletedUserPro.setPhone("NULL");
         deletedUser.setProfile(deletedUserPro);
-        // Deleted
         deletedUser.setDeleted(true);
+
+        // Save all users
         userRepository.saveAllAndFlush(Arrays.asList(user1, user2, user3, user4, user5, deletedUser));
 
         // ----- HASHTAGS -----
@@ -154,7 +157,7 @@ public class Seeder implements CommandLineRunner {
 
         hashtagRepository.saveAllAndFlush(Arrays.asList(hashtag1, hashtag2, hashtag3, hashtag4));
 
-//	    // ----- TWEETS -----
+        // ----- TWEETS -----
         // --- Start Tweet 1 ---
         Tweet tweet1 = new Tweet();
         tweet1.setAuthor(user1);
@@ -177,7 +180,6 @@ public class Seeder implements CommandLineRunner {
         Tweet tweet3 = new Tweet();
         tweet3.setAuthor(user2);
         tweet3.setDeleted(false);
-        // Set Content @PARAM String
         tweet3.setContent("This is some content 3 tweet3 #luigi #whereiscortana");
         tweet3.setHashtags(Arrays.asList(hashtag3, hashtag4));
         tweet3.setInReplyTo(tweet2);
@@ -187,7 +189,6 @@ public class Seeder implements CommandLineRunner {
         Tweet tweet4 = new Tweet();
         tweet4.setAuthor(user2);
         tweet4.setDeleted(false);
-        // Set Content @PARAM String
         tweet4.setContent("This is some content 4 tweet4");
         tweet4.setInReplyTo(tweet3);
         tweetRepository.saveAndFlush(tweet4);
@@ -196,7 +197,6 @@ public class Seeder implements CommandLineRunner {
         Tweet tweet5 = new Tweet();
         tweet5.setAuthor(user3);
         tweet5.setDeleted(false);
-        // Set Content @PARAM String
         tweet5.setContent("This is some content 5 tweet5");
         tweet5.setMentionedUsers(Arrays.asList(user1, user2));
         tweet5.setInReplyTo(tweet4);
@@ -206,7 +206,6 @@ public class Seeder implements CommandLineRunner {
         Tweet tweet6 = new Tweet();
         tweet6.setAuthor(user3);
         tweet6.setDeleted(false);
-        // Set Content @PARAM String
         tweet6.setRepostOf(tweet5);
         tweet6.setMentionedUsers(Arrays.asList(user1, user2));
         tweet6.setInReplyTo(tweet2);
@@ -216,22 +215,21 @@ public class Seeder implements CommandLineRunner {
         Tweet deletedTweet = new Tweet();
         deletedTweet.setAuthor(user3);
         deletedTweet.setDeleted(true);
-        // Set Content @PARAM String
         deletedTweet.setContent("This is a deleted tweet (User3) tweet7");
         deletedTweet.setMentionedUsers(Arrays.asList(user1, user2));
         tweetRepository.saveAndFlush(deletedTweet);
 
         // ----- LIST of Tweets + Adding to User# -----
         List<Tweet> user1Tweets = List.of(tweet1, tweet2);
-        user1.setLikedTweets(user1Tweets);
+        user1.setAuthoredTweets(user1Tweets); // Changed to setAuthoredTweets()
         userRepository.saveAndFlush(user1);
 
         List<Tweet> user2Tweets = List.of(tweet3, tweet4);
-        user2.setLikedTweets(user2Tweets);
+        user2.setAuthoredTweets(user2Tweets); // Changed to setAuthoredTweets()
         userRepository.saveAndFlush(user2);
 
         List<Tweet> user3Tweets = List.of(tweet5, tweet6);
-        user3.setLikedTweets(user3Tweets);
+        user3.setAuthoredTweets(user3Tweets); // Changed to setAuthoredTweets()
         userRepository.saveAndFlush(user3);
 
         // ----- List of Liked Tweets -----
@@ -244,7 +242,7 @@ public class Seeder implements CommandLineRunner {
 
         user3.setLikedTweets(user2Tweets);
         userRepository.saveAndFlush(user3);
-        
+
         deletedUser.setLikedTweets(user2Tweets);
         userRepository.saveAndFlush(deletedUser);
 
@@ -252,6 +250,7 @@ public class Seeder implements CommandLineRunner {
         List<User> followingList = List.of(user2, user3, user4);
         user1.setFollowing(followingList);
         userRepository.saveAndFlush(user1);
+
         // ----- List of Followers -----
         List<User> followersList = List.of(user3, user5);
         user1.setFollowers(followersList);
@@ -261,7 +260,6 @@ public class Seeder implements CommandLineRunner {
         Tweet mention1 = new Tweet();
         mention1.setAuthor(user2);
         mention1.setDeleted(false);
-        // Set Content @PARAM String
         mention1.setContent("This is some content for tweet mention 1");
         tweetRepository.saveAndFlush(mention1);
 
