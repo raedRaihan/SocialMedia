@@ -6,10 +6,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.cooksys.lemonadestand.exceptions.NotFoundException;
+ 
 import com.cooksys.twitter_api.dtos.ErrorDto;
 import com.cooksys.twitter_api.exceptions.BadRequestException;
 import com.cooksys.twitter_api.exceptions.NotAuthorizedException;
+import com.cooksys.twitter_api.exceptions.NotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
