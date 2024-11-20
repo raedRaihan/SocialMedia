@@ -8,4 +8,8 @@ import lombok.NoArgsConstructor;
 public class CredentialsDto {
     private String username;
     private String password; // for validating credentials in requests
+
+    /*public Credentials requestDtoToEntity(CredentialsDto credentials) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }*/
 }
