@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @Data
-@Table(name = "users") // Custom table name to avoid conflicts with reserved SQL keywords.
+@Table(name = "user_table") // Custom table name to avoid conflicts with reserved SQL keywords.
 public class User {
 
     @Id
