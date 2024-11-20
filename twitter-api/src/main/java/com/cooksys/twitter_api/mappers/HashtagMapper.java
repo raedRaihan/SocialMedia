@@ -8,9 +8,6 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface HashtagMapper {
 
-    // Converts a HashtagRequestDto (POST || PATCH) to a Hashtag entity for saving to the database
-    Hashtag requestDtoToEntity(HashtagDto dto);
-
     // Converts a Hashtag entity to a HashtagResponseDto (GET || DELETE) for returning data to the client
     HashtagDto entityToDto(Hashtag entity);
 

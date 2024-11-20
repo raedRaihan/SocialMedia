@@ -27,7 +27,6 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
     private Long id;
 
     @CreationTimestamp
@@ -45,29 +44,14 @@ public class User {
     private List<Tweet> authoredTweets; // List of tweets authored by this user.
 
     @ManyToMany
-    @JoinTable(
-        name = "followers_following", // Explicitly naming join table as per ERD.
-        joinColumns = @JoinColumn(name = "follower_id"),
-        inverseJoinColumns = @JoinColumn(name = "following_id")
-    )
     private List<User> following; // List of user objects that the current user instance is following
 
     @ManyToMany(mappedBy = "following")
     private List<User> followers; // Inverse side of self-referencing many-to-many relationship with user
 
     @ManyToMany
-    @JoinTable(
-        name = "user_likes", // Explicitly naming join table as per ERD.
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "tweet_id")
-    )
     private List<Tweet> likedTweets; // List of tweet objects that a user has liked
 
     @ManyToMany
-    @JoinTable(
-        name = "user_mentions", // Explicitly naming join table as per ERD.
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "tweet_id")
-    )
     private List<Tweet> mentionedTweets; // List of tweet objects where a user is mentioned
 }

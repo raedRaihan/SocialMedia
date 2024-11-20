@@ -20,7 +20,6 @@ public class Tweet {
     
     // Foreign key
     @ManyToOne
-    @JoinColumn(name = "author", referencedColumnName = "user_id", nullable = false)
     private User author;
     
     private Timestamp timestamp;
@@ -31,7 +30,6 @@ public class Tweet {
     
     // Foreign key
     @ManyToOne
-    @JoinColumn(name = "inReplyTo")
     private Tweet inReplyTo;
 
     @OneToMany(mappedBy = "inReplyTo")
@@ -39,34 +37,18 @@ public class Tweet {
     
     // Foreign key
     @ManyToOne
-    @JoinColumn(name = "repostOf")
     private Tweet repostOf;
 
     @OneToMany(mappedBy = "repostOf")
     private List<Tweet> reposts = new ArrayList<>();
     
     @ManyToMany
-    @JoinTable(
-        name = "user_likes", 
-        joinColumns = @JoinColumn(name = "tweet_id"), 
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
     private List<User> usersWhoLiked;
     
     @ManyToMany
-    @JoinTable(
-        name = "user_mentions", 
-        joinColumns = @JoinColumn(name = "tweet_id"), 
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
     private List<User> mentionedUsers;
     
     // New Many-to-Many relationship for hashtags
     @ManyToMany
-    @JoinTable(
-        name = "tweet_hashtags", // Make sure this matches the join table used in the Hashtag entity
-        joinColumns = @JoinColumn(name = "tweet_id"),
-        inverseJoinColumns = @JoinColumn(name = "hashtag_id")
-    )
     private List<Hashtag> hashtags; // List of hashtags associated with the tweet
 }
