@@ -14,5 +14,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     // JPA's query method naming convention will convert to proper SQL
     List<User> findByDeletedFalse();
+
+    // Find an active user by username (deleted = false)
+    User findByCredentialsUsernameAndDeletedFalse(String username);
+
+    // Find a previously deleted user by username (deleted = true)
+    User findByCredentialsUsernameAndDeletedTrue(String username);
 }
 
