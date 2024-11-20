@@ -6,7 +6,7 @@ import com.cooksys.twitter_api.dtos.HashtagResponseDto;
 import com.cooksys.twitter_api.entities.Hashtag;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring", uses = { TweetMapper.class })
+@Mapper(componentModel = "spring")
 public interface HashtagMapper {
 
     // Converts a HashtagRequestDto (POST || PATCH) to a Hashtag entity for saving to the database
