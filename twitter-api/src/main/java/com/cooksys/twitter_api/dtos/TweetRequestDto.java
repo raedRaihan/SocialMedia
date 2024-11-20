@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class TweetRequestDto {
     private String content; // Content of the tweet (optional for reposts)
-    private CredentialsRequestDto credentials; // Credentials for authentication
+    private CredentialsDto credentials; // Credentials for authentication
 }
 
