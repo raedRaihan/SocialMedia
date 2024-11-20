@@ -6,7 +6,7 @@ import com.cooksys.twitter_api.dtos.TweetResponseDto;
 import com.cooksys.twitter_api.entities.Tweet;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring", uses = { UserMapper.class, HashtagMapper.class, CredentialsMapper.class })
+@Mapper(componentModel = "spring", uses = { UserMapper.class })
 public interface TweetMapper {
 
     // Converts a TweetRequestDto (POST || PATCH) to a Tweet entity for saving to the database
