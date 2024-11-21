@@ -13,4 +13,8 @@ public interface TweetService {
 	TweetResponseDto getTweetById(Long id);
 
 	TweetResponseDto deleteTweetById(Long id, TweetRequestDto tweetRequestDto);
+
+	TweetResponseDto createReplyToTweet(Long id, TweetRequestDto tweetRequestDto);
+
+	TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
 }
