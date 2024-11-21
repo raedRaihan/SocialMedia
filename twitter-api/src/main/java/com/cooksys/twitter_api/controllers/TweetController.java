@@ -1,7 +1,13 @@
 package com.cooksys.twitter_api.controllers;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.cooksys.twitter_api.dtos.TweetResponseDto;
+import com.cooksys.twitter_api.services.TweetService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -10,8 +16,16 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/tweets")
 public class TweetController {
 
-    // Add constructor-based dependency injection for service here if needed
+    
+	private final TweetService tweetService;
+	
+	// GET tweets #60
 
-    // TODO: Implement tweet-related endpoints later
+	@GetMapping
+	public List<TweetResponseDto> getAllTweets()
+	{
+		return tweetService.getAllTweets();
+	}
+	
 
 }
