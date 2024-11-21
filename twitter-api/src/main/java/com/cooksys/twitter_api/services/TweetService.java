@@ -2,6 +2,7 @@ package com.cooksys.twitter_api.services;
 
 import java.util.List;
 
+import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
 
@@ -17,4 +18,6 @@ public interface TweetService {
 	TweetResponseDto createReplyToTweet(Long id, TweetRequestDto tweetRequestDto);
 
 	TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
+
+	List<HashtagDto> getTweetTags(Long id);
 }

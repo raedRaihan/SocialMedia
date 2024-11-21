@@ -1,6 +1,7 @@
 package com.cooksys.twitter_api.services.impl;
 
 
+import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
 import com.cooksys.twitter_api.entities.Hashtag;
@@ -112,7 +113,7 @@ public class TweetServiceImpl implements TweetService
 		
 		
 		
-		if(tweetRequestDto.getContent()== null || tweetRequestDto.getCredentials().getUsername()==null || tweetRequestDto.getCredentials().getPassword()==null)
+		if(tweetRequestDto.getContent()== null || tweetRequestDto.getCredentials()==null || tweetRequestDto.getCredentials().getUsername()==null || tweetRequestDto.getCredentials().getPassword()==null)
 		{
 			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"Make sure you fill out the content and credential fields");
 		}
@@ -235,6 +236,32 @@ public class TweetServiceImpl implements TweetService
 		
 		
 	    return tweetMapper.entityToDto(savedTweet);
+	}
+
+	@Override
+	public List<HashtagDto> getTweetTags(Long id)
+	{
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		
+		Tweet mainTweet = optionalTweet.get();
+		List<Hashtag> tweetHashTags=mainTweet.getHashtags();
+		
+		
+		
+		
+		 
+		// return tweetMapper.entityToDto(tweetToReturn);
+		
+		return hashtagMapper.entitiesToDtos(tweetHashTags);
+		
+		
+		
 	}
 	
 	
