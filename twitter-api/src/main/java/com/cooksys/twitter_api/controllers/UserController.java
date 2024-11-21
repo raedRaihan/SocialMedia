@@ -2,6 +2,7 @@ package com.cooksys.twitter_api.controllers;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksys.twitter_api.dtos.CredentialsDto;
 import com.cooksys.twitter_api.dtos.UserRequestDto;
 import com.cooksys.twitter_api.dtos.UserResponseDto;
 import com.cooksys.twitter_api.services.UserService;
@@ -31,12 +33,6 @@ public class UserController {
         return userService.findByDeletedFalse();  // Call the service method to fetch users
     }
 
-    @GetMapping("/validate/username/exists/@{username}") 
-        public boolean usernameExists(@PathVariable String username) {
-            //username = normalizeUsername(username);
-            return userService.usernameExists(username);
-        }
-    
     public String getMethodName(@RequestParam String param) {
         return new String();
     }    
@@ -51,6 +47,21 @@ public class UserController {
         return userService.updateProfile(username, userRequestDto);
     }
 
+    @GetMapping("/@{username}")
+    public UserResponseDto getUserByUsername(@PathVariable String username) {
+        return userService.getUserByUsername(username);
+    }
+
+    @DeleteMapping("/@{username}")
+    public UserResponseDto deleteUser(
+            @PathVariable String username,
+            @RequestBody CredentialsDto credentialsDto) {
+        return userService.deleteUser(username, credentialsDto);
+    }
+    
+
+}
+
     /* Helper Function */
     /*private String normalizeUsername(String username) {
         if (username == null || username.isBlank()) {
@@ -62,4 +73,4 @@ public class UserController {
 
 
 
-}
+

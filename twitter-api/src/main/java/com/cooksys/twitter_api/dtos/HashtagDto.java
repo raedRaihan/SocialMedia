@@ -1,9 +1,10 @@
 package com.cooksys.twitter_api.dtos;
 
+import java.sql.Timestamp;
+import java.util.List;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.sql.Timestamp;
 
 @NoArgsConstructor
 @Data
@@ -13,4 +14,6 @@ public class HashtagDto {
     private Timestamp firstUsed;
 
     private Timestamp lastUsed;
+
+    private List<TweetResponseDto> tweets; // Associated tweets with this hashtag
 }
