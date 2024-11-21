@@ -1,7 +1,9 @@
 package com.cooksys.twitter_api.services.impl;
 
+import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
 import com.cooksys.twitter_api.entities.Tweet;
+import com.cooksys.twitter_api.entities.User;
 import com.cooksys.twitter_api.mappers.TweetMapper;
 import com.cooksys.twitter_api.repositories.TweetRepository;
 import com.cooksys.twitter_api.services.TweetService;
@@ -41,6 +43,35 @@ public class TweetServiceImpl implements TweetService
 		Tweet tweetToReturn = optionalTweets.get();
 		
 		return tweetMapper.entityToDto(tweetToReturn);
+		
+	}
+
+	@Override
+	public TweetResponseDto deleteTweetById(Long id, TweetRequestDto tweetRequestDto)
+	{
+		Optional<Tweet> optionalTweets= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweets.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		Tweet tweetToDelete=optionalTweets.get();
+		
+		// check if credentials are correct
+		User tweetAuthor=tweetToDelete.getAuthor();
+		
+		
+		if(tweetAuthor.getCredentials().getPassword().equals(tweetRequestDto.getCredentials().getPassword()) == false)
+		{
+			throw new ResponseStatusException (HttpStatus.UNAUTHORIZED,"Invalid Login");
+		}
+		
+		
+		
+		tweetToDelete.setDeleted(true);
+		
+		return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToDelete));
 		
 	}
 	
