@@ -1,5 +1,7 @@
 package com.cooksys.twitter_api.dtos;
 
+import com.cooksys.twitter_api.entities.Credentials;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +11,7 @@ public class CredentialsDto {
     private String username;
     private String password; // for validating credentials in requests
 
-    /*public Credentials requestDtoToEntity(CredentialsDto credentials) {
+    public Credentials requestDtoToEntity(CredentialsDto credentials) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }*/
+    }
 }

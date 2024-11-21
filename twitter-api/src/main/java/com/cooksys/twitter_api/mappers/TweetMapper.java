@@ -9,10 +9,10 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring", uses = { UserMapper.class })
 public interface TweetMapper {
 
-    // Converts a TweetRequestDto (POST || PATCH) to a Tweet entity for saving to the database
+    // Converts a TweetRequestDto to a Tweet entity
     Tweet requestDtoToEntity(TweetRequestDto dto);
 
-    // Converts a Tweet entity to a TweetResponseDto (GET || DELETE) for returning data to the client
+    // Converts a Tweet entity to a TweetResponseDto
     TweetResponseDto entityToDto(Tweet entity);
 
     // Converts a list of Tweet entities to a list of TweetResponseDto

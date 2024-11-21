@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.cooksys.twitter_api.dtos.UserRequestDto;
 import com.cooksys.twitter_api.dtos.UserResponseDto;
@@ -33,6 +35,13 @@ public class UserServiceImpl implements UserService {
     public List<UserResponseDto> findByDeletedFalse() {
         List<User> activeUsers = userRepository.findByDeletedFalse();
         return userMapper.entitiesToDtos(activeUsers); // Convert to DTOs and return
+    }
+
+    // validate if a username exists
+    @Override
+    public boolean usernameExists(String username) {
+        // database query - if username exists it is not null
+        return userRepository.findByCredentialsUsernameAndDeletedFalse(username) != null;
     }
 
     // Post new user
@@ -86,6 +95,39 @@ public class UserServiceImpl implements UserService {
     
         // Convert the saved User entity to a response DTO and return it
         return userMapper.entityToDto(revivedUser);
+    }
+
+    // Patch user
+    @Override
+    @Transactional
+    public UserResponseDto updateProfile(@PathVariable String username, @RequestBody UserRequestDto userRequestDto) {
+        // first validate that the request body has needed fields
+        if (userRequestDto.getCredentials() == null || userRequestDto.getCredentials().getUsername() == null ||
+            userRequestDto.getCredentials().getPassword() == null || userRequestDto.getProfile() == null) {
+            
+            throw new BadRequestException("Invalid Credentials");
+        }
+
+        // check if the user exists and is active
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new BadRequestException("User not found or deleted / not active");
+        }
+
+        // validate the provided credentials match the user's credentials
+        Credentials providedCredentials = credentialsMapper.requestDtoToEntity(userRequestDto.getCredentials());
+        if (!user.getCredentials().getPassword().equals(providedCredentials.getPassword())) {
+            throw new BadRequestException("Invalid credentials");
+        }
+
+        //  update the user's profile with the new username
+        Profile updatedProfile = profileMapper.requestDtoToEntity(userRequestDto.getProfile());
+        user.setProfile(updatedProfile);
+
+        // save the updated user to the db
+        User updatedUser = userRepository.save(user); 
+
+        return userMapper.entityToDto(updatedUser);
     }
     
 
