@@ -1,6 +1,17 @@
 package com.cooksys.twitter_api.controllers;
 
-import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.cooksys.twitter_api.dtos.HashtagDto;
+import com.cooksys.twitter_api.dtos.TweetRequestDto;
+import com.cooksys.twitter_api.services.HashtagService;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -8,8 +19,15 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/tags")
 public class HashtagController {
 
-    // Add constructor-based dependency injection for service here if needed
+        private final HashtagService hashtagService;
 
-    // TODO: Implement hashtag-related endpoints later
+        @GetMapping
+        public List<HashtagDto> getAllHashtags() {
+            return hashtagService.getAllHashtags();
+        }
 
+        @GetMapping("/{label}")
+        public HashtagDto getTweetsByHashtag(@PathVariable String label) {
+            return hashtagService.getTweetsByHashtagLabel(label);
+        }
 }

@@ -20,5 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Find a previously deleted user by username (deleted = true)
     User findByCredentialsUsernameAndDeletedTrue(String username);
+ 
+    /* Validate if a username exists */
+    boolean existsByCredentialsUsernameAndDeletedFalse(String username);
 }
 
