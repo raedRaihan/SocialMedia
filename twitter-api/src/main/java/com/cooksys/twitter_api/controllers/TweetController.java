@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
+import com.cooksys.twitter_api.dtos.UserResponseDto;
 import com.cooksys.twitter_api.services.TweetService;
 
 import lombok.RequiredArgsConstructor;
@@ -66,6 +67,13 @@ public class TweetController {
 	public List<HashtagDto> getTweetTags(@PathVariable Long id)
 	{
 		return tweetService.getTweetTags(id);
+	}
+	
+	// GET tweets/{id}/mentions #48
+	@GetMapping("/{id}/mentions")
+	public List<UserResponseDto> getMentionedUsers(@PathVariable Long id)
+	{
+		return tweetService.getMentionedUsers(id);
 	}
 
 

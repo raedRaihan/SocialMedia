@@ -4,6 +4,7 @@ package com.cooksys.twitter_api.services.impl;
 import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
+import com.cooksys.twitter_api.dtos.UserResponseDto;
 import com.cooksys.twitter_api.entities.Hashtag;
 import com.cooksys.twitter_api.entities.Tweet;
 import com.cooksys.twitter_api.entities.User;
@@ -251,16 +252,28 @@ public class TweetServiceImpl implements TweetService
 		
 		Tweet mainTweet = optionalTweet.get();
 		List<Hashtag> tweetHashTags=mainTweet.getHashtags();
-		
-		
-		
-		
-		 
-		// return tweetMapper.entityToDto(tweetToReturn);
+	
 		
 		return hashtagMapper.entitiesToDtos(tweetHashTags);
 		
 		
+		
+	}
+
+	@Override
+	public List<UserResponseDto> getMentionedUsers(Long id)
+	{
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		
+		Tweet mainTweet = optionalTweet.get();
+		
+		return userMapper.entitiesToDtos(mainTweet.getMentionedUsers());		
 		
 	}
 	

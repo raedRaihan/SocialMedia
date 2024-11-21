@@ -5,6 +5,7 @@ import java.util.List;
 import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
+import com.cooksys.twitter_api.dtos.UserResponseDto;
 
 public interface TweetService {
 
@@ -20,4 +21,6 @@ public interface TweetService {
 	TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
 
 	List<HashtagDto> getTweetTags(Long id);
+
+	List<UserResponseDto> getMentionedUsers(Long id);
 }
