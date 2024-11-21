@@ -8,4 +8,6 @@ public interface TweetService {
 
 	List<TweetResponseDto> getAllTweets();
     // Define methods here later
+
+	TweetResponseDto getTweetById(Long id);
 }

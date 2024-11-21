@@ -3,6 +3,7 @@ package com.cooksys.twitter_api.controllers;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +26,13 @@ public class TweetController {
 	public List<TweetResponseDto> getAllTweets()
 	{
 		return tweetService.getAllTweets();
+	}
+	
+	// GET tweets/{id} #58
+	@GetMapping("/{id}")
+	public TweetResponseDto getTweetById(@PathVariable Long id)
+	{
+		return tweetService.getTweetById(id);
 	}
 	
 
