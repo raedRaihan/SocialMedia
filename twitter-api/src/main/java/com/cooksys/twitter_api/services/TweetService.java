@@ -2,6 +2,7 @@ package com.cooksys.twitter_api.services;
 
 import java.util.List;
 
+import com.cooksys.twitter_api.dtos.CredentialsDto;
 import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
@@ -23,4 +24,8 @@ public interface TweetService {
 	List<HashtagDto> getTweetTags(Long id);
 
 	List<UserResponseDto> getMentionedUsers(Long id);
+
+	void likeTweet(Long id, CredentialsDto credentialsDto);
+
+	
 }

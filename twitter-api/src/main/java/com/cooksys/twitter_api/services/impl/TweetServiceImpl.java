@@ -1,6 +1,7 @@
 package com.cooksys.twitter_api.services.impl;
 
 
+import com.cooksys.twitter_api.dtos.CredentialsDto;
 import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
@@ -107,8 +108,8 @@ public class TweetServiceImpl implements TweetService
 		// TODO Auto-generated method stub
 		return null;
 	}
-	 
-
+	
+	
 	@Override
 	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
 		
@@ -274,6 +275,58 @@ public class TweetServiceImpl implements TweetService
 		Tweet mainTweet = optionalTweet.get();
 		
 		return userMapper.entitiesToDtos(mainTweet.getMentionedUsers());		
+		
+	}
+
+	@Override
+	public void likeTweet(Long id, CredentialsDto credentialsDto) 
+	{
+		Optional<Tweet> optionalTweets= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweets.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		Tweet tweetToLike=optionalTweets.get();
+		
+		if( credentialsDto==null || credentialsDto.getUsername()==null || credentialsDto.getPassword()==null)
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"Make sure you fill out all the credential fields");
+		}
+		
+		List<User> allUsers=userRepository.findAll();		
+		
+		User foundAuthor=null;
+		
+		for(User u:allUsers)
+		{
+			
+			if((u.getCredentials().getUsername().equals(credentialsDto.getUsername())==true) && (u.getCredentials().getPassword().equals(credentialsDto.getPassword())==true) )
+			{
+				
+				foundAuthor=u;
+				
+				
+			}
+		}
+		
+		if(foundAuthor==null)
+		{
+			throw new ResponseStatusException (HttpStatus.UNAUTHORIZED,"Invalid Credentials");
+		}
+		
+		foundAuthor.getLikedTweets().add(tweetToLike);
+		tweetRepository.saveAndFlush(tweetToLike);
+		
+		tweetToLike.getUsersWhoLiked().add(foundAuthor);
+		
+		
+		userRepository.saveAndFlush(foundAuthor);
+		
+		
+		
+		
 		
 	}
 	

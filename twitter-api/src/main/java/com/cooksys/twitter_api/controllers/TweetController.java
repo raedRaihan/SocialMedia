@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksys.twitter_api.dtos.CredentialsDto;
 import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
@@ -75,6 +76,14 @@ public class TweetController {
 	{
 		return tweetService.getMentionedUsers(id);
 	}
+	
+	// POST tweets/{id}/like #56
+	@PostMapping("/{id}/like")
+	public void likeTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto)
+	{
+		tweetService.likeTweet(id,credentialsDto);
+	}
+
 
 
 	
