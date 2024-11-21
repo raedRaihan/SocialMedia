@@ -3,6 +3,7 @@ package com.cooksys.twitter_api.entities;
 import java.sql.Timestamp;
 import java.util.List;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,11 +25,11 @@ public class Hashtag {
     @Column(unique = true, nullable = false)
     private String label;
 
-    // @CreationTimestamp
+   // @CreationTimestamp
     private Timestamp firstUsed;
     private Timestamp lastUsed;
 
-    // @UpdateTimestamp
+   // @UpdateTimestamp
     @ManyToMany(mappedBy = "hashtags")
     private List<Tweet> tweets;
 }

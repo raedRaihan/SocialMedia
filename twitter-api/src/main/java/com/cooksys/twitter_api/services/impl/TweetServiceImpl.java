@@ -3,15 +3,22 @@ package com.cooksys.twitter_api.services.impl;
 
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
 import com.cooksys.twitter_api.dtos.TweetResponseDto;
+import com.cooksys.twitter_api.entities.Hashtag;
 import com.cooksys.twitter_api.entities.Tweet;
 import com.cooksys.twitter_api.entities.User;
+import com.cooksys.twitter_api.mappers.HashtagMapper;
 import com.cooksys.twitter_api.mappers.TweetMapper;
 import com.cooksys.twitter_api.mappers.UserMapper;
+import com.cooksys.twitter_api.repositories.HashtagRepository;
 import com.cooksys.twitter_api.repositories.TweetRepository;
 import com.cooksys.twitter_api.repositories.UserRepository;
 import com.cooksys.twitter_api.services.TweetService;
 import lombok.RequiredArgsConstructor;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +36,9 @@ public class TweetServiceImpl implements TweetService
 	
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
+	
+	private final HashtagRepository hashtagRepository;
+	private final HashtagMapper hashtagMapper;
 	
 	@Override
 	public List<TweetResponseDto> getAllTweets() {
@@ -95,6 +105,7 @@ public class TweetServiceImpl implements TweetService
 		// TODO Auto-generated method stub
 		return null;
 	}
+	 
 
 	@Override
 	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
@@ -107,6 +118,8 @@ public class TweetServiceImpl implements TweetService
 		}
 		
 		List<User> allUsers=userRepository.findAll();
+		List<Hashtag> allHashtags=hashtagRepository.findAll();
+		Date date = new Date();
 
 		
 		
@@ -119,6 +132,7 @@ public class TweetServiceImpl implements TweetService
 			{
 				
 				foundAuthor=u;
+				
 				
 			}
 		}
@@ -133,8 +147,94 @@ public class TweetServiceImpl implements TweetService
 		newTweet.setContent(tweetRequestDto.getContent());
 		newTweet.setAuthor(foundAuthor);
 		
+		if(newTweet.getHashtags()==null)
+		{
+			newTweet.setHashtags(new ArrayList<Hashtag>());
+		}
 		
-		return tweetMapper.entityToDto(tweetRepository.saveAndFlush(newTweet));
+		Tweet savedTweet = tweetRepository.saveAndFlush(newTweet);
+		
+		
+		String [] splitContent=tweetRequestDto.getContent().split(" ");
+		
+		LinkedHashSet<String> tempSplitContent = new LinkedHashSet<>(); 
+		for(String C:splitContent)
+		{
+			tempSplitContent.add(C);
+		}
+		
+
+		List<Hashtag> hashtagsToSave=new ArrayList<>();
+		List<User> usersToSave=new ArrayList<>();
+		
+		splitContent=tempSplitContent.toArray(new String[tempSplitContent.size()]);// did this to get rid of the duplicates
+		for(String C:splitContent)
+		{
+			if(C.charAt(0)=='@') // @ user mentions
+	        {
+	            String userName=C.split("@")[1];
+	            
+	            for(User u:allUsers)
+	    		{
+	            	if(u.getCredentials().getUsername().equals(userName))
+	            	{
+	            		u.getMentionedTweets().add(newTweet);
+	            		usersToSave.add(u);
+	            		
+	            		
+	            	}
+	            	
+	    		}
+	            
+	        }
+			else if(C.charAt(0)=='#') // Hash Tags
+			{
+				
+				boolean HashtagExsist=false;
+				for(Hashtag ht:allHashtags)
+				{
+					if(ht.getLabel().equals(C))// if hash tag already exists
+					{
+						if(ht.getFirstUsed()==null)
+						{
+							ht.setFirstUsed(new Timestamp(date.getTime()));
+							
+						}
+						
+						ht.setLastUsed(new Timestamp(date.getTime()));
+						HashtagExsist=true;
+						hashtagsToSave.add(ht);
+						savedTweet.getHashtags().add(ht);
+					}
+					
+				}
+				
+				if(HashtagExsist==false) // make a new hashtag
+				{
+					Hashtag tempHashTag= new Hashtag();
+					tempHashTag.setLabel(C);
+					tempHashTag.setFirstUsed(new Timestamp(date.getTime()));
+					tempHashTag.setLastUsed(new Timestamp(date.getTime()));
+					ArrayList<Tweet> tempTweets=new ArrayList<Tweet>();
+					tempTweets.add(savedTweet);
+					tempHashTag.setTweets(tempTweets);
+					
+					hashtagsToSave.add(tempHashTag);
+					
+					savedTweet.getHashtags().add(tempHashTag);
+					
+				
+				}
+			}
+		}
+		
+	   
+		
+		hashtagRepository.saveAllAndFlush(hashtagsToSave);
+		userRepository.saveAllAndFlush(usersToSave);
+		
+		
+	    return tweetMapper.entityToDto(savedTweet);
 	}
 	
 	
