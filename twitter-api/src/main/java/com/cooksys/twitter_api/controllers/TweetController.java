@@ -48,8 +48,8 @@ public class TweetController {
 
 	// DELETE tweets/{id} #57
 	@DeleteMapping("/{id}")
-	public TweetResponseDto deleteTweetById(@PathVariable Long id, @RequestBody TweetRequestDto tweetRequestDto) {
-		return tweetService.deleteTweetById(id, tweetRequestDto);
+	public TweetResponseDto deleteTweetById(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+		return tweetService.deleteTweetById(id, credentialsDto);
 	}
 
 	// POST tweets/{id}/reply #55

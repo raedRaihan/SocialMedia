@@ -65,13 +65,13 @@ public class TweetServiceImpl implements TweetService {
 	}
 
 	@Override
-	public TweetResponseDto deleteTweetById(Long id, TweetRequestDto tweetRequestDto) {
+	public TweetResponseDto deleteTweetById(Long id, CredentialsDto credentialsDto) {
 		
-		if ( tweetRequestDto.getCredentials() == null
-				|| tweetRequestDto.getCredentials().getUsername() == null
-				|| tweetRequestDto.getCredentials().getPassword() == null) {
+		if ( credentialsDto == null
+				|| credentialsDto.getUsername() == null
+				|| credentialsDto.getPassword() == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"Make sure you fill out the content and credential fields");
+					"Make sure you fill out the credential fields");
 		}
 		
 		Optional<Tweet> optionalTweets = tweetRepository.findByIdAndDeletedFalse(id);
@@ -85,7 +85,7 @@ public class TweetServiceImpl implements TweetService {
 		User tweetAuthor = tweetToDelete.getAuthor();
 
 		if (tweetAuthor.getCredentials().getPassword()
-				.equals(tweetRequestDto.getCredentials().getPassword()) == false) {
+				.equals(credentialsDto.getPassword()) == false) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Login");
 		}
 
