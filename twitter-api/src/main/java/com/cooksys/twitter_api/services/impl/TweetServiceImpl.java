@@ -171,7 +171,7 @@ public class TweetServiceImpl implements TweetService {
 				if (HashtagExsist == false) // make a new hashtag
 				{
 					Hashtag tempHashTag = new Hashtag();
-					tempHashTag.setLabel(C);
+					tempHashTag.setLabel(C.split("#")[1]);
 					//tempHashTag.setFirstUsed(new Timestamp(date.getTime()));
 					//tempHashTag.setLastUsed(new Timestamp(date.getTime()));
 					ArrayList<Tweet> tempTweets = new ArrayList<Tweet>();
