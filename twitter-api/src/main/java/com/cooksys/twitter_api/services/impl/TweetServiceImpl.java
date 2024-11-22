@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -381,9 +382,65 @@ public class TweetServiceImpl implements TweetService
 	}
 
 	@Override
-	public ContextDto getContextOfTweet(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+	public ContextDto getContextOfTweet(Long id) 
+	{
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		
+		Tweet targetTweet = optionalTweet.get();
+		
+		ContextDto tempContext= new ContextDto();
+		tempContext.setTarget(tweetMapper.entityToDto(targetTweet));
+		
+		List<TweetResponseDto> beforeTweets=new ArrayList<>();
+		List<TweetResponseDto> afterTweets=new ArrayList<>();
+		
+		List<Tweet> allTweets=tweetRepository.findAll();
+		// first do before tweets
+		Tweet tempTarget=targetTweet;
+		
+		for(int i=0;i<allTweets.size();i++)
+		{
+			
+			if(allTweets.get(i)==tempTarget)
+			{
+				if(allTweets.get(i).getInReplyTo() != null)
+				{
+					tempTarget=allTweets.get(i).getInReplyTo();
+					beforeTweets.add(tweetMapper.entityToDto(tempTarget));
+					i=0;
+				}
+				
+			}
+			
+		}
+		Collections.reverse(beforeTweets);
+		// now do the after tweets
+		tempTarget=targetTweet;
+		for(int i=0;i<allTweets.size();i++)
+		{
+			
+			if(allTweets.get(i).getInReplyTo()==tempTarget)
+			{
+				tempTarget=allTweets.get(i);
+				afterTweets.add(tweetMapper.entityToDto(tempTarget));
+				i=0;
+				
+			}
+			
+		}
+		
+		tempContext.setBefore(beforeTweets);
+		tempContext.setAfter(afterTweets);
+		
+		return tempContext;
+		
+		
 	}
 
 	@Override
@@ -482,6 +539,8 @@ public class TweetServiceImpl implements TweetService
 		Tweet baseTweet = optionalTweet.get();
 		List<Tweet> allTweets=tweetRepository.findAll();
 		List<Tweet> tweetRepostList= new ArrayList<>();
+		
+		
 		
 		for(Tweet tw: allTweets)
 		{
