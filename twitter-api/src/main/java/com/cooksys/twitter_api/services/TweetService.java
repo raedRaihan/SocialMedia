@@ -27,5 +27,7 @@ public interface TweetService {
 
 	void likeTweet(Long id, CredentialsDto credentialsDto);
 
+	List<UserResponseDto> getUsersWhoLikedTweet(Long id);
+
 	
 }

@@ -329,6 +329,23 @@ public class TweetServiceImpl implements TweetService
 		
 		
 	}
+
+	@Override
+	public List<UserResponseDto> getUsersWhoLikedTweet(Long id)
+	{
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		
+		Tweet mainTweet = optionalTweet.get();
+		
+		return userMapper.entitiesToDtos(mainTweet.getUsersWhoLiked());
+		
+	}
 	
 	
 	

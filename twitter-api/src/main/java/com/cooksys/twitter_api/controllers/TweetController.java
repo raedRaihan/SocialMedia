@@ -83,6 +83,14 @@ public class TweetController {
 	{
 		tweetService.likeTweet(id,credentialsDto);
 	}
+	
+	//GET tweets/{id}/likes #52
+	@GetMapping("/{id}/likes")
+	public List<UserResponseDto> getUsersWhoLikedTweet(@PathVariable Long id)
+	{
+		return tweetService.getUsersWhoLikedTweet(id);
+	}
+
 
 
 
