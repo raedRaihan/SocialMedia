@@ -1,6 +1,7 @@
 package com.cooksys.twitter_api.entities;
 
-import java.security.Timestamp;
+
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 

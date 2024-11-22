@@ -66,6 +66,14 @@ public class TweetServiceImpl implements TweetService {
 
 	@Override
 	public TweetResponseDto deleteTweetById(Long id, TweetRequestDto tweetRequestDto) {
+		
+		if ( tweetRequestDto.getCredentials() == null
+				|| tweetRequestDto.getCredentials().getUsername() == null
+				|| tweetRequestDto.getCredentials().getPassword() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Make sure you fill out the content and credential fields");
+		}
+		
 		Optional<Tweet> optionalTweets = tweetRepository.findByIdAndDeletedFalse(id);
 
 		if (optionalTweets.isEmpty()) {
@@ -148,11 +156,11 @@ public class TweetServiceImpl implements TweetService {
 					if (ht.getLabel().equals(C))// if hash tag already exists
 					{
 						if (ht.getFirstUsed() == null) {
-						//	ht.setFirstUsed(new Timestamp(date.getTime()));
+							ht.setFirstUsed(new Timestamp(date.getTime()));
 
 						}
 
-					//	ht.setLastUsed(new Timestamp(date.getTime()));
+						ht.setLastUsed(new Timestamp(date.getTime()));
 						HashtagExsist = true;
 						hashtagsToSave.add(ht);
 						savedTweet.getHashtags().add(ht);
@@ -248,7 +256,7 @@ public class TweetServiceImpl implements TweetService {
 
 	@Override
 	public List<HashtagDto> getTweetTags(Long id) {
-		System.out.println("id is "+id);
+		
 		Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
 
 		if (optionalTweet.isEmpty()) {
@@ -257,6 +265,11 @@ public class TweetServiceImpl implements TweetService {
 
 		Tweet mainTweet = optionalTweet.get();
 		List<Hashtag> tweetHashTags = mainTweet.getHashtags();
+		List<String> tweetStringHashTags=new ArrayList<>();
+		for(Hashtag HT:tweetHashTags)
+		{
+			tweetStringHashTags.add(HT.getLabel());
+		}
 
 		return hashtagMapper.entitiesToDtos(tweetHashTags);
 
