@@ -4,6 +4,8 @@ import java.security.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,7 @@ public class Tweet {
     @ManyToOne
     private User author;
     
+    @CreationTimestamp
     private Timestamp timestamp;
     
     private boolean deleted;

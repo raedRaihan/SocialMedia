@@ -148,11 +148,11 @@ public class TweetServiceImpl implements TweetService {
 					if (ht.getLabel().equals(C))// if hash tag already exists
 					{
 						if (ht.getFirstUsed() == null) {
-							ht.setFirstUsed(new Timestamp(date.getTime()));
+						//	ht.setFirstUsed(new Timestamp(date.getTime()));
 
 						}
 
-						ht.setLastUsed(new Timestamp(date.getTime()));
+					//	ht.setLastUsed(new Timestamp(date.getTime()));
 						HashtagExsist = true;
 						hashtagsToSave.add(ht);
 						savedTweet.getHashtags().add(ht);
@@ -164,8 +164,8 @@ public class TweetServiceImpl implements TweetService {
 				{
 					Hashtag tempHashTag = new Hashtag();
 					tempHashTag.setLabel(C);
-					tempHashTag.setFirstUsed(new Timestamp(date.getTime()));
-					tempHashTag.setLastUsed(new Timestamp(date.getTime()));
+					//tempHashTag.setFirstUsed(new Timestamp(date.getTime()));
+					//tempHashTag.setLastUsed(new Timestamp(date.getTime()));
 					ArrayList<Tweet> tempTweets = new ArrayList<Tweet>();
 					tempTweets.add(savedTweet);
 					tempHashTag.setTweets(tempTweets);
