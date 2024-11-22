@@ -1,5 +1,7 @@
 package com.cooksys.twitter_api.services;
 
 public interface ValidateService {
-    // Define methods here later
+    
+        /* GET /validate/username/exists/@{username} */
+        boolean usernameExists(String username);
 }
