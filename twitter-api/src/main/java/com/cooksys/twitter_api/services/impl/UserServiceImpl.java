@@ -8,17 +8,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.cooksys.twitter_api.dtos.CredentialsDto;
+import com.cooksys.twitter_api.dtos.TweetResponseDto;
 import com.cooksys.twitter_api.dtos.UserRequestDto;
 import com.cooksys.twitter_api.dtos.UserResponseDto;
 import com.cooksys.twitter_api.entities.Credentials;
 import com.cooksys.twitter_api.entities.Profile;
+import com.cooksys.twitter_api.entities.Tweet;
 import com.cooksys.twitter_api.entities.User;
 import com.cooksys.twitter_api.exceptions.BadRequestException;
 import com.cooksys.twitter_api.exceptions.NotAuthorizedException;
 import com.cooksys.twitter_api.exceptions.NotFoundException;
 import com.cooksys.twitter_api.mappers.CredentialsMapper;
 import com.cooksys.twitter_api.mappers.ProfileMapper;
+import com.cooksys.twitter_api.mappers.TweetMapper;
 import com.cooksys.twitter_api.mappers.UserMapper;
+import com.cooksys.twitter_api.repositories.TweetRepository;
 import com.cooksys.twitter_api.repositories.UserRepository;
 import com.cooksys.twitter_api.services.UserService;
 
@@ -30,8 +34,14 @@ public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+
     private final ProfileMapper profileMapper;
     private final CredentialsMapper credentialsMapper;
+
+    private final TweetRepository tweetRepository;
+    private final TweetMapper tweetMapper;
+
+
 
     // Fetch all active (non-deleted) users and return as DTOs
     @Override
@@ -97,38 +107,52 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto updateProfile(@PathVariable String username, @RequestBody UserRequestDto userRequestDto) {
-        // first validate that the request body has needed fields
+        // Validate the request body
         if (userRequestDto == null || 
-        (userRequestDto.getCredentials().getUsername() == null && userRequestDto.getProfile() == null)) {
-            throw new BadRequestException("Update request must include valid fields to update");
-}
-        if (userRequestDto.getCredentials() == null || userRequestDto.getCredentials().getUsername() == null ||
-            userRequestDto.getCredentials().getPassword() == null || userRequestDto.getProfile() == null) {
-            
-            throw new BadRequestException("Invalid Credentials");
+            userRequestDto.getCredentials() == null || 
+            userRequestDto.getCredentials().getPassword() == null || 
+            userRequestDto.getProfile() == null) {
+            throw new BadRequestException("Update request must include valid credentials and profile fields.");
         }
-
-        // check if the user exists and is active
+    
+        // Check if the user exists and is active
         User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
         if (user == null) {
-            throw new BadRequestException("User not found or deleted / not active");
+            throw new NotFoundException("User not found or has been deleted.");
         }
-
-        // validate the provided credentials match the user's credentials
-        Credentials providedCredentials = credentialsMapper.requestDtoToEntity(userRequestDto.getCredentials());
-        if (!user.getCredentials().getPassword().equals(providedCredentials.getPassword())) {
-            throw new BadRequestException("Invalid credentials");
+    
+        // Validate the provided credentials match the user's credentials
+        if (!user.getCredentials().getPassword().equals(userRequestDto.getCredentials().getPassword())) {
+            throw new NotAuthorizedException("Invalid credentials.");
         }
-
-        //  update the user's profile with the new username
+    
+        // Merge the existing profile with the updated profile
+        Profile existingProfile = user.getProfile();
         Profile updatedProfile = profileMapper.requestDtoToEntity(userRequestDto.getProfile());
-        user.setProfile(updatedProfile);
-
-        // save the updated user to the db
-        User updatedUser = userRepository.save(user); 
-
+    
+        if (updatedProfile.getFirstName() != null) {
+            existingProfile.setFirstName(updatedProfile.getFirstName());
+        }
+        if (updatedProfile.getLastName() != null) {
+            existingProfile.setLastName(updatedProfile.getLastName());
+        }
+        if (updatedProfile.getEmail() != null) {
+            existingProfile.setEmail(updatedProfile.getEmail());
+        }
+        if (updatedProfile.getPhone() != null) {
+            existingProfile.setPhone(updatedProfile.getPhone());
+        }
+    
+        // Update the user's profile
+        user.setProfile(existingProfile);
+    
+        // Save the updated user to the database
+        User updatedUser = userRepository.save(user);
+    
+        // Return the updated user as a response DTO
         return userMapper.entityToDto(updatedUser);
     }
+    
 
     @Override
     public UserResponseDto getUserByUsername(@PathVariable String username) {
@@ -151,30 +175,157 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponseDto deleteUser(String username, CredentialsDto credentialsDto) {
-        // Validate credentials in the request body
+        // Validate the credentials
         if (credentialsDto == null || credentialsDto.getPassword() == null) {
-            throw new BadRequestException("Credentials are required for deleting a user");
+            throw new BadRequestException("Credentials are required for deleting a user.");
         }
     
-        // Find the user by username (ensure not already deleted)
+        // Find the user and ensure they are not already deleted
         User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
         if (user == null) {
-            throw new NotFoundException(String.format("User with username '%s' not found or is already deleted.", username));
+            throw new NotFoundException(String.format("User with username '%s' not found or already deleted.", username));
         }
     
-        // Validate credentials
+        // Validate the provided credentials match the user's credentials
         if (!user.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
-            throw new NotAuthorizedException("Invalid credentials for user deletion");
+            throw new NotAuthorizedException("Invalid credentials for deleting a user.");
         }
     
-        // Soft delete the user
+        // Soft delete the user by marking them as deleted
         user.setDeleted(true);
         userRepository.save(user);
     
-        // Return the user data prior to deletion
+        // Return the user data as a response DTO
         return userMapper.entityToDto(user);
     }
+    
+    
+    //follow user
+    @Override
+    @Transactional
+    public UserResponseDto followUser(String targetUsername, CredentialsDto credentialsDto) {
+        // Validate the credentials in the request
+        if (credentialsDto == null || credentialsDto.getUsername() == null || credentialsDto.getPassword() == null) {
+            throw new BadRequestException("Credentials with username and password are required.");
+        }
+    
+        // Fetch the requesting user and validate existence and credentials
+        User currentUser = userRepository.findByCredentialsUsernameAndDeletedFalse(credentialsDto.getUsername());
+        if (currentUser == null) {
+            throw new NotFoundException("Requesting user not found or has been deleted.");
+        }
+        if (!currentUser.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
+            throw new NotAuthorizedException("Invalid credentials for the requesting user.");
+        }
+    
+        // Fetch the target user to follow
+        User targetUser = userRepository.findByCredentialsUsernameAndDeletedFalse(targetUsername);
+        if (targetUser == null) {
+            throw new NotFoundException(String.format("Target user '%s' not found or has been deleted.", targetUsername));
+        }
+    
+        // Ensure the user is not already following the target user
+        if (currentUser.getFollowing().contains(targetUser)) {
+            throw new BadRequestException(String.format("You are already following user '%s'.", targetUsername));
+        }
+    
+        // Add the target user to the following list and save
+        currentUser.getFollowing().add(targetUser);
+        userRepository.save(currentUser);
+    
+        // Return the target user's details as a response DTO
+        return userMapper.entityToDto(targetUser);
+    }
+    
+    
+
+    @Override
+    @Transactional
+    public UserResponseDto unFollowUser(String targetUsername, CredentialsDto credentialsDto) {
+        // Validate the credentials
+        if (credentialsDto == null || credentialsDto.getUsername() == null || credentialsDto.getPassword() == null) {
+            throw new BadRequestException("Credentials with username and password are required.");
+        }
+    
+        // Fetch the requesting user and validate existence and credentials
+        User currentUser = userRepository.findByCredentialsUsernameAndDeletedFalse(credentialsDto.getUsername());
+        if (currentUser == null) {
+            throw new NotAuthorizedException("Invalid credentials or user not found.");
+        }
+        if (!currentUser.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
+            throw new NotAuthorizedException("Invalid credentials for the requesting user.");
+        }
+    
+        // Fetch the target user to unfollow
+        User targetUser = userRepository.findByCredentialsUsernameAndDeletedFalse(targetUsername);
+        if (targetUser == null) {
+            throw new NotFoundException(String.format("Target user '%s' not found or has been deleted.", targetUsername));
+        }
+    
+        // Ensure the user is currently following the target user
+        if (!currentUser.getFollowing().contains(targetUser)) {
+            throw new BadRequestException(String.format("You are not following user '%s'.", targetUsername));
+        }
+    
+        // Remove the target user from the following list and save
+        currentUser.getFollowing().remove(targetUser);
+        userRepository.save(currentUser);
+    
+        // Return the target user's details as a response DTO
+        return userMapper.entityToDto(targetUser);
+    }
+    
+    @Override
+    public List<TweetResponseDto> getUserTweets(String username) {
+        // Validate the username
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Username cannot be null or blank.");
+        }
+    
+        // Fetch the user by username
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new NotFoundException(String.format("User '%s' not found or has been deleted.", username));
+        }
+    
+        // Retrieve non-deleted tweets sorted in reverse chronological order
+        List<Tweet> tweets = user.getAuthoredTweets().stream()
+                .filter(tweet -> !tweet.isDeleted())
+                .sorted((t1, t2) -> t2.getTimestamp().compareTo(t1.getTimestamp()))
+                .toList();
+    
+        // Map tweets to response DTOs and return
+        return tweetMapper.entitiesToDtos(tweets);
+    }
+
+    @Override
+    public List<TweetResponseDto> getUserMentions(String username) {
+        // Validate the username
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Username cannot be null or blank.");
+        }
+    
+        // Fetch the user and ensure they exist
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new NotFoundException(String.format("User '%s' not found or has been deleted.", username));
+        }
+    
+        // Fetch tweets mentioning the user and not deleted, sorted in reverse chronological order
+        List<Tweet> mentions = tweetRepository.findByMentionedUsersContainingAndDeletedFalseOrderByTimestampDesc(user);
+    
+        // Map the tweets to response DTOs
+        return tweetMapper.entitiesToDtos(mentions);
+    }
+    
+    
+    
+
+}
+
+
     
 
     /* Potential Helper function for validation
@@ -191,4 +342,3 @@ public class UserServiceImpl implements UserService {
      */
 
 
-}
