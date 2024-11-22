@@ -412,7 +412,11 @@ public class TweetServiceImpl implements TweetService
 				if(allTweets.get(i).getInReplyTo() != null)
 				{
 					tempTarget=allTweets.get(i).getInReplyTo();
-					beforeTweets.add(tweetMapper.entityToDto(tempTarget));
+					if(tempTarget.isDeleted()!=true)
+					{
+						beforeTweets.add(tweetMapper.entityToDto(tempTarget));
+					}
+				
 					i=0;
 				}
 				
@@ -428,7 +432,10 @@ public class TweetServiceImpl implements TweetService
 			if(allTweets.get(i).getInReplyTo()==tempTarget)
 			{
 				tempTarget=allTweets.get(i);
-				afterTweets.add(tweetMapper.entityToDto(tempTarget));
+				if(tempTarget.isDeleted()!=true)
+				{
+					afterTweets.add(tweetMapper.entityToDto(tempTarget));
+				}
 				i=0;
 				
 			}
