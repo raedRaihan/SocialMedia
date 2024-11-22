@@ -36,5 +36,7 @@ public interface TweetService {
 
 	TweetResponseDto repostTweet(Long id, CredentialsDto credentialsDto);
 
+	List<TweetResponseDto>  getRepostOfTweet(Long id);
+
 	
 }

@@ -467,5 +467,32 @@ public class TweetServiceImpl implements TweetService
 		
 	
 	}
+
+	@Override
+	public List<TweetResponseDto> getRepostOfTweet(Long id) 
+	{
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		
+		Tweet baseTweet = optionalTweet.get();
+		List<Tweet> allTweets=tweetRepository.findAll();
+		List<Tweet> tweetRepostList= new ArrayList<>();
+		
+		for(Tweet tw: allTweets)
+		{
+			if(tw.getRepostOf()==baseTweet)
+			{
+				tweetRepostList.add(tw);
+			}
+		}
+		
+		return tweetMapper.entitiesToDtos(tweetRepostList);
+		
+	}
  
 }
