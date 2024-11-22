@@ -105,6 +105,13 @@ public class TweetController {
 	{
 		return tweetService.getRepliesToTweet(id);
 	}
+	
+	// POST tweets/{id}/repost #54
+	@PostMapping("/{id}/repost")
+	public TweetResponseDto repostTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto)
+	{
+		return tweetService.repostTweet(id,credentialsDto);
+	}
 
 
 

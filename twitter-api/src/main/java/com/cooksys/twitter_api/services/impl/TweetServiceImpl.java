@@ -415,5 +415,57 @@ public class TweetServiceImpl implements TweetService
 		
 		
 	}
+
+	@Override
+	public TweetResponseDto repostTweet(Long id, CredentialsDto credentialsDto)
+	{
+		if( credentialsDto==null || credentialsDto.getUsername()==null || credentialsDto.getPassword()==null)
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"Make sure you fill out all the credential fields");
+		}
+		
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		
+		List<User> allUsers=userRepository.findAll();	
+		User foundAuthor=null;
+		
+		for(User u:allUsers)
+		{
+			
+			if((u.getCredentials().getUsername().equals(credentialsDto.getUsername())==true) && (u.getCredentials().getPassword().equals(credentialsDto.getPassword())==true) )
+			{
+				
+				foundAuthor=u;
+				
+				
+			}
+		}
+		
+		if(foundAuthor==null )
+		{
+			throw new ResponseStatusException (HttpStatus.UNAUTHORIZED,"Invalid Credentials");
+		}
+		
+		
+		Tweet baseTweet = optionalTweet.get();
+		
+		
+
+		Tweet newTweet=new Tweet();
+		newTweet.setRepostOf(baseTweet);
+		newTweet.setAuthor(foundAuthor);
+		
+		Tweet savedTweet = tweetRepository.saveAndFlush(newTweet);
+		
+		return tweetMapper.entityToDto(savedTweet);
+		
+	
+	}
  
 }
