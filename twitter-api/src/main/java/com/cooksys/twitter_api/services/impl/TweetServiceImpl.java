@@ -188,8 +188,10 @@ public class TweetServiceImpl implements TweetService {
 
 		hashtagRepository.saveAllAndFlush(hashtagsToSave);
 		userRepository.saveAllAndFlush(usersToSave);
+		TweetResponseDto tempReturn=tweetMapper.entityToDto(savedTweet);
+		tempReturn.setPosted(new Timestamp(date.getTime()));
 
-		return tweetMapper.entityToDto(savedTweet);
+		return tempReturn;
 	}
 
 	@Override
