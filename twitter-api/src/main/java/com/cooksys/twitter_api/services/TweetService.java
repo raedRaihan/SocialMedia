@@ -32,5 +32,7 @@ public interface TweetService {
 
 	ContextDto getContextOfTweet(Long id);
 
+	List<TweetResponseDto> getRepliesToTweet(Long id);
+
 	
 }

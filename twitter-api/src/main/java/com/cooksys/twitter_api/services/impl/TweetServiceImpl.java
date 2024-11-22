@@ -361,9 +361,6 @@ public class TweetServiceImpl implements TweetService
 		userRepository.saveAndFlush(foundAuthor);
 		
 		
-		
-		
-		
 	}
 
 	@Override
@@ -388,12 +385,35 @@ public class TweetServiceImpl implements TweetService
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
-	
-	
-	
-	
-	
-   
+
+	@Override
+	public List<TweetResponseDto> getRepliesToTweet(Long id)
+	{
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		
+		Tweet baseTweet = optionalTweet.get();
+		
+		List<Tweet> allTweets=tweetRepository.findAll();
+		List<Tweet> tweetsThatReplied= new ArrayList<>();
+		
+		for(Tweet tw: allTweets)
+		{
+			if(tw.getInReplyTo()==baseTweet)
+			{
+				tweetsThatReplied.add(tw);
+			}
+			
+		}
+		
+		return tweetMapper.entitiesToDtos(tweetsThatReplied);
+		
+		
+	}
+ 
 }

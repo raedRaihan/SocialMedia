@@ -98,6 +98,13 @@ public class TweetController {
 	{
 		return tweetService.getContextOfTweet(id);
 	}
+	
+	// GET tweets/{id}/replies #50
+	@GetMapping("/{id}/replies")
+	public List<TweetResponseDto> getRepliesToTweet(@PathVariable Long id)
+	{
+		return tweetService.getRepliesToTweet(id);
+	}
 
 
 
