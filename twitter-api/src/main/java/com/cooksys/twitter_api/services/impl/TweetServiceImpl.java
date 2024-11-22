@@ -1,6 +1,7 @@
 package com.cooksys.twitter_api.services.impl;
 
 
+import com.cooksys.twitter_api.dtos.ContextDto;
 import com.cooksys.twitter_api.dtos.CredentialsDto;
 import com.cooksys.twitter_api.dtos.HashtagDto;
 import com.cooksys.twitter_api.dtos.TweetRequestDto;
@@ -93,38 +94,10 @@ public class TweetServiceImpl implements TweetService
 		return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToDelete));
 		
 	}
-
-	@Override
-	public TweetResponseDto createReplyToTweet(Long id, TweetRequestDto tweetRequestDto) {
-		
-		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
-		
-		
-		if(optionalTweet.isEmpty())
-		{
-			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
-		}
-		Tweet tweetToReplyTo=optionalTweet.get();
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
-	
-	@Override
-	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-		
-		
-		
-		if(tweetRequestDto.getContent()== null || tweetRequestDto.getCredentials()==null || tweetRequestDto.getCredentials().getUsername()==null || tweetRequestDto.getCredentials().getPassword()==null)
-		{
-			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"Make sure you fill out the content and credential fields");
-		}
-		
+	public User getAndVerifyAuthor(TweetRequestDto tweetRequestDto)
+	{
 		List<User> allUsers=userRepository.findAll();
-		List<Hashtag> allHashtags=hashtagRepository.findAll();
-		Date date = new Date();
-
-		
 		
 		User foundAuthor=null;
 		
@@ -140,23 +113,18 @@ public class TweetServiceImpl implements TweetService
 			}
 		}
 		
-		if(foundAuthor==null)
+		if(foundAuthor==null )
 		{
 			throw new ResponseStatusException (HttpStatus.UNAUTHORIZED,"Invalid Credentials");
 		}
 		
-		Tweet newTweet=new Tweet();
-		
-		newTweet.setContent(tweetRequestDto.getContent());
-		newTweet.setAuthor(foundAuthor);
-		
-		if(newTweet.getHashtags()==null)
-		{
-			newTweet.setHashtags(new ArrayList<Hashtag>());
-		}
-		
-		Tweet savedTweet = tweetRepository.saveAndFlush(newTweet);
-		
+		return foundAuthor;
+	}
+	public TweetResponseDto processContent(TweetRequestDto tweetRequestDto,Tweet savedTweet)
+	{
+		Date date = new Date();
+		List<User> allUsers=userRepository.findAll();
+		List<Hashtag> allHashtags=hashtagRepository.findAll();
 		
 		String [] splitContent=tweetRequestDto.getContent().split(" ");
 		
@@ -181,7 +149,7 @@ public class TweetServiceImpl implements TweetService
 	    		{
 	            	if(u.getCredentials().getUsername().equals(userName))
 	            	{
-	            		u.getMentionedTweets().add(newTweet);
+	            		u.getMentionedTweets().add(savedTweet);
 	            		usersToSave.add(u);
 	            		
 	            		
@@ -238,6 +206,74 @@ public class TweetServiceImpl implements TweetService
 		
 		
 	    return tweetMapper.entityToDto(savedTweet);
+	}
+
+	@Override
+	public TweetResponseDto createReplyToTweet(Long id, TweetRequestDto tweetRequestDto) {
+		
+		if(tweetRequestDto.getContent()== null || tweetRequestDto.getCredentials()==null || tweetRequestDto.getCredentials().getUsername()==null || tweetRequestDto.getCredentials().getPassword()==null)
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"Make sure you fill out the content and credential fields");
+		}
+		
+		Optional<Tweet> optionalTweet= tweetRepository.findByIdAndDeletedFalse(id);
+		
+		
+		if(optionalTweet.isEmpty())
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"No Tweet found with id: "+id);
+		}
+		Tweet tweetToReplyTo=optionalTweet.get();
+		
+		User foundAuthor=getAndVerifyAuthor(tweetRequestDto);
+		
+		Tweet newTweet=new Tweet();
+		
+		newTweet.setContent(tweetRequestDto.getContent());
+		newTweet.setAuthor(foundAuthor);
+		newTweet.setInReplyTo(tweetToReplyTo);
+		
+		if(newTweet.getHashtags()==null)
+		{
+			newTweet.setHashtags(new ArrayList<Hashtag>());
+		}
+		
+		Tweet savedTweet = tweetRepository.saveAndFlush(newTweet);
+		
+		return processContent(tweetRequestDto,savedTweet);
+		
+		
+	}
+	
+	
+	@Override
+	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
+		
+		
+		
+		if(tweetRequestDto.getContent()== null || tweetRequestDto.getCredentials()==null || tweetRequestDto.getCredentials().getUsername()==null || tweetRequestDto.getCredentials().getPassword()==null)
+		{
+			throw new ResponseStatusException (HttpStatus.BAD_REQUEST,"Make sure you fill out the content and credential fields");
+		}
+		
+		User foundAuthor=getAndVerifyAuthor(tweetRequestDto);
+		
+		Tweet newTweet=new Tweet();
+		
+		newTweet.setContent(tweetRequestDto.getContent());
+		newTweet.setAuthor(foundAuthor);
+		
+		if(newTweet.getHashtags()==null)
+		{
+			newTweet.setHashtags(new ArrayList<Hashtag>());
+		}
+		
+		Tweet savedTweet = tweetRepository.saveAndFlush(newTweet);
+		
+		
+		return processContent(tweetRequestDto,savedTweet);
+		
+	   
 	}
 
 	@Override
@@ -346,6 +382,16 @@ public class TweetServiceImpl implements TweetService
 		return userMapper.entitiesToDtos(mainTweet.getUsersWhoLiked());
 		
 	}
+
+	@Override
+	public ContextDto getContextOfTweet(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	
+	
+	
 	
 	
 	
