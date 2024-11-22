@@ -248,6 +248,7 @@ public class TweetServiceImpl implements TweetService {
 
 	@Override
 	public List<HashtagDto> getTweetTags(Long id) {
+		System.out.println("id is "+id);
 		Optional<Tweet> optionalTweet = tweetRepository.findByIdAndDeletedFalse(id);
 
 		if (optionalTweet.isEmpty()) {
