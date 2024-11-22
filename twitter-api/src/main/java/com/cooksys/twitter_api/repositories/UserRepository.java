@@ -23,5 +23,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
  
     /* Validate if a username exists */
     boolean existsByCredentialsUsernameAndDeletedFalse(String username);
+
 }
 

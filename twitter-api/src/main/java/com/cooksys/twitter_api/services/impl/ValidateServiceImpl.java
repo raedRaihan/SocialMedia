@@ -1,4 +1,4 @@
-/*package com.cooksys.twitter_api.services.impl;
+package com.cooksys.twitter_api.services.impl;
 
 import org.springframework.stereotype.Service;
 
@@ -18,4 +18,10 @@ public class ValidateServiceImpl implements ValidateService {
         // Delegate the logic to the UserRepository
         return userRepository.existsByCredentialsUsernameAndDeletedFalse(username);
     }
-}*/
+
+    @Override
+    public boolean isUsernameAvailable(String username) {
+        //not available if a non active user has it
+        return userRepository.existsByCredentialsUsernameAndDeletedFalse(username);
+    }
+}
