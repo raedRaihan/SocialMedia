@@ -327,12 +327,16 @@ public class TweetServiceImpl implements TweetService {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Credentials");
 		}
 
-		foundAuthor.getLikedTweets().add(tweetToLike);
-		tweetRepository.saveAndFlush(tweetToLike);
+		if(foundAuthor.getLikedTweets().contains(tweetToLike)==false)
+		{
+			foundAuthor.getLikedTweets().add(tweetToLike);
+			tweetRepository.saveAndFlush(tweetToLike);
 
-		tweetToLike.getUsersWhoLiked().add(foundAuthor);
+			tweetToLike.getUsersWhoLiked().add(foundAuthor);
 
-		userRepository.saveAndFlush(foundAuthor);
+			userRepository.saveAndFlush(foundAuthor);
+		}
+		
 
 	}
 
