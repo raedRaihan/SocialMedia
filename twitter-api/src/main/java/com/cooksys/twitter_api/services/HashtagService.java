@@ -11,4 +11,6 @@ public interface HashtagService {
     // Fetches a specific hashtag and all associated tweets - with content
     HashtagDto getTweetsByHashtagLabel(String label);
 
+    /* GET val */
+
 }

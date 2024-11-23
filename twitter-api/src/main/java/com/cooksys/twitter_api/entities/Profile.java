@@ -13,8 +13,9 @@ public class Profile {
     private String firstName;
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true) // Ensure username is unique and non-null.
     private String email;
 
+    @Column(nullable = false) // Password must be provided.
     private String phone;
 }

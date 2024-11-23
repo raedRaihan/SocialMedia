@@ -10,5 +10,8 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
         // Find a hashtag by its label (case-insensitive, optional for safety)
         Hashtag findByLabel(String label);
 
+        // Check if a hashtag exists by its label (case-insensitive)
+        boolean existsByLabelIgnoreCase(String label);
+
 }
 
