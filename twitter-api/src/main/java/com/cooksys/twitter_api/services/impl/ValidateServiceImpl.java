@@ -2,6 +2,8 @@ package com.cooksys.twitter_api.services.impl;
 
 import org.springframework.stereotype.Service;
 
+import com.cooksys.twitter_api.exceptions.BadRequestException;
+import com.cooksys.twitter_api.repositories.HashtagRepository;
 import com.cooksys.twitter_api.repositories.UserRepository;
 import com.cooksys.twitter_api.services.ValidateService;
 
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class ValidateServiceImpl implements ValidateService {
 
     private final UserRepository userRepository;
+    private final HashtagRepository hashtagRepository;
 
     @Override
     public boolean usernameExists(String username) {
@@ -23,5 +26,13 @@ public class ValidateServiceImpl implements ValidateService {
     public boolean isUsernameAvailable(String username) {
         //not available if a non active user has it
         return userRepository.existsByCredentialsUsernameAndDeletedFalse(username);
+    }
+
+    @Override
+    public boolean doesTagExist(String label) {
+        if (label == null || label.isBlank()) {
+            throw new BadRequestException("Hashtag label cannot be null or blank.");
+        }
+        return hashtagRepository.findByLabel(label) != null;
     }
 }

@@ -1,6 +1,8 @@
 package com.cooksys.twitter_api.services.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,17 +10,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.cooksys.twitter_api.dtos.CredentialsDto;
+import com.cooksys.twitter_api.dtos.TweetResponseDto;
 import com.cooksys.twitter_api.dtos.UserRequestDto;
 import com.cooksys.twitter_api.dtos.UserResponseDto;
 import com.cooksys.twitter_api.entities.Credentials;
 import com.cooksys.twitter_api.entities.Profile;
+import com.cooksys.twitter_api.entities.Tweet;
 import com.cooksys.twitter_api.entities.User;
 import com.cooksys.twitter_api.exceptions.BadRequestException;
 import com.cooksys.twitter_api.exceptions.NotAuthorizedException;
 import com.cooksys.twitter_api.exceptions.NotFoundException;
 import com.cooksys.twitter_api.mappers.CredentialsMapper;
 import com.cooksys.twitter_api.mappers.ProfileMapper;
+import com.cooksys.twitter_api.mappers.TweetMapper;
 import com.cooksys.twitter_api.mappers.UserMapper;
+import com.cooksys.twitter_api.repositories.TweetRepository;
 import com.cooksys.twitter_api.repositories.UserRepository;
 import com.cooksys.twitter_api.services.UserService;
 
@@ -32,6 +38,8 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final ProfileMapper profileMapper;
     private final CredentialsMapper credentialsMapper;
+    private final TweetRepository tweetRepository;
+    private final TweetMapper tweetMapper;
 
     // Fetch all active (non-deleted) users and return as DTOs
     @Override
@@ -175,6 +183,132 @@ public class UserServiceImpl implements UserService {
         // Return the user data prior to deletion
         return userMapper.entityToDto(user);
     }
+
+    @Override
+    public List<UserResponseDto> getUsersFollowedByUsername(String username) {
+        // Validate the username
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Username cannot be null or blank");
+        }
+
+        // Find the user by username and ensure they are active
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new NotFoundException(String.format("User with username '%s' not found or is inactive.", username));
+        }
+
+        // Filter the followed users to include only active ones
+        List<User> followedUsers = user.getFollowing().stream()
+            .filter(followedUser -> !followedUser.isDeleted()) // Ensure the followed user is active
+            .collect(Collectors.toList());
+
+        // Map the filtered users to response DTOs and return
+        return userMapper.entitiesToDtos(followedUsers);
+    }
+
+    @Override
+    public List<UserResponseDto> getFollowersByUsername(String username) {
+        // Validate the username
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Username cannot be null or blank");
+        }
+
+        // Find the user by username and ensure they are active
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new NotFoundException(String.format("User with username '%s' not found or is inactive.", username));
+        }
+
+        // Filter the followers to include only active ones
+        List<User> activeFollowers = user.getFollowers().stream()
+            .filter(follower -> !follower.isDeleted()) // Ensure the follower is active
+            .collect(Collectors.toList());
+
+        // Map the filtered followers to response DTOs and return
+        return userMapper.entitiesToDtos(activeFollowers);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TweetResponseDto> getTweetsByUsername(String username) {
+        // Validate username
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Username cannot be null or blank.");
+        }
+    
+        // Find user by username
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new NotFoundException(String.format("No active user found with username '%s'.", username));
+        }
+    
+        // Fetch all tweets authored by the user
+        List<Tweet> userTweets = tweetRepository.findByAuthorAndDeletedFalseOrderByTimestampDesc(user);
+    
+        // Map tweets to response DTOs and return
+        return userTweets.stream()
+                .map(tweetMapper::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TweetResponseDto> getUserFeed(String username) {
+        // Validate the username
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Username cannot be null or blank.");
+        }
+    
+        // Find the user by username and ensure they are active
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new NotFoundException(String.format("No active user found with username '%s'.", username));
+        }
+    
+        // Fetch all tweets authored by the user
+        List<Tweet> userTweets = tweetRepository.findByAuthorAndDeletedFalseOrderByTimestampDesc(user);
+    
+        // Fetch all tweets authored by users the given user is following
+        List<Tweet> followingTweets = user.getFollowing().stream()
+                .filter(followedUser -> !followedUser.isDeleted()) // Exclude deleted users
+                .flatMap(followedUser -> tweetRepository.findByAuthorAndDeletedFalseOrderByTimestampDesc(followedUser).stream())
+                .collect(Collectors.toList());
+    
+        // Combine user tweets and following tweets
+        List<Tweet> allTweets = Stream.concat(userTweets.stream(), followingTweets.stream())
+                .sorted((t1, t2) -> t2.getTimestamp().compareTo(t1.getTimestamp())) // Reverse order by timestamp
+                .collect(Collectors.toList());
+    
+        // Map tweets to response DTOs and return
+        return allTweets.stream()
+                .map(tweetMapper::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TweetResponseDto> getMentionsByUsername(String username) {
+        // Validate username
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Username cannot be null or blank.");
+        }
+
+        // Find user by username
+        User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (user == null) {
+            throw new NotFoundException(String.format("No active user found with username '%s'.", username));
+        }
+
+        // Fetch all tweets mentioning the user
+        List<Tweet> mentionedTweets = tweetRepository.findByMentionedUsersContainingAndDeletedFalseOrderByTimestampDesc(user);
+
+        // Map tweets to response DTOs and return
+        return mentionedTweets.stream()
+                .map(tweetMapper::entityToDto)
+                .collect(Collectors.toList());
+    }
+    
+    
     
 
     /* Potential Helper function for validation
