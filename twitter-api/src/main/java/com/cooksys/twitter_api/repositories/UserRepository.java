@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.cooksys.twitter_api.entities.Credentials;
 import com.cooksys.twitter_api.entities.User;
 
 
@@ -23,6 +24,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
  
     /* Validate if a username exists */
     boolean existsByCredentialsUsernameAndDeletedFalse(String username);
+
+
+    // Find user by credentials
+    User findByCredentials(Credentials credentials);
 
 }
 

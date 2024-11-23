@@ -31,6 +31,11 @@ public interface UserService {
     List<TweetResponseDto> getUserFeed(String username);
     /* GET /users/@{username}/mentions */
     List<TweetResponseDto> getMentionsByUsername(String username);
+    /* POST /users/@{username}/follow */
+    void followUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto);
+    /* POST /users/@{username}/unfollow */
+    void unfollowUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto);
+
     
 
 }

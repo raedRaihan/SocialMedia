@@ -1,5 +1,6 @@
 package com.cooksys.twitter_api.services.impl;
 
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,62 +102,92 @@ public class UserServiceImpl implements UserService {
         return userMapper.entityToDto(revivedUser);
     }
 
-    // Patch user
     @Override
     @Transactional
     public UserResponseDto updateProfile(@PathVariable String username, @RequestBody UserRequestDto userRequestDto) {
-        // first validate that the request body has needed fields
-        if (userRequestDto == null || 
-        (userRequestDto.getCredentials().getUsername() == null && userRequestDto.getProfile() == null)) {
-            throw new BadRequestException("Update request must include valid fields to update");
-}
-        if (userRequestDto.getCredentials() == null || userRequestDto.getCredentials().getUsername() == null ||
-            userRequestDto.getCredentials().getPassword() == null || userRequestDto.getProfile() == null) {
-            
-            throw new BadRequestException("Invalid Credentials");
+        // Validate the request body is not null
+        if (userRequestDto == null) {
+            throw new BadRequestException("Update request body must not be null.");
+        }
+    
+        // Validate that credentials are provided
+        if (userRequestDto.getCredentials() == null ||
+            userRequestDto.getCredentials().getUsername() == null || 
+            userRequestDto.getCredentials().getPassword() == null) {
+            throw new BadRequestException("Valid credentials (username and password) are required.");
         }
 
-        // check if the user exists and is active
+        // Validate profile is provided
+        if (userRequestDto.getProfile() == null) {
+            throw new BadRequestException("Profile information must be provided in the update request.");
+        }
+    
+        // Check if the user exists and is active
         User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
         if (user == null) {
-            throw new BadRequestException("User not found or deleted / not active");
+            throw new NotFoundException(String.format("User with username '%s' not found or is inactive.", username));
         }
-
-        // validate the provided credentials match the user's credentials
-        Credentials providedCredentials = credentialsMapper.requestDtoToEntity(userRequestDto.getCredentials());
-        if (!user.getCredentials().getPassword().equals(providedCredentials.getPassword())) {
-            throw new BadRequestException("Invalid credentials");
+    
+        // Validate provided credentials match the user's credentials
+        if (!user.getCredentials().getPassword().equals(userRequestDto.getCredentials().getPassword())) {
+            throw new BadRequestException("Invalid credentials. Password does not match.");
         }
-
-        //  update the user's profile with the new username
-        Profile updatedProfile = profileMapper.requestDtoToEntity(userRequestDto.getProfile());
-        user.setProfile(updatedProfile);
-
-        // save the updated user to the db
-        User updatedUser = userRepository.save(user); 
-
-        return userMapper.entityToDto(updatedUser);
-    }
+    
+        // Ensure the username matches the provided username
+        if (!user.getCredentials().getUsername().equals(username)) {
+            throw new BadRequestException(String.format("Username mismatch. Expected '%s' but got '%s'.", 
+                username, userRequestDto.getCredentials().getUsername()));
+        }
+    
+        // Preserve the joined timestamp to ensure it cannot be modified
+        java.sql.Timestamp originalJoinedDate = user.getJoined();
+    
+        // Update profile fields if provided, allowing partial updates
+        if (userRequestDto.getProfile() != null) {
+            Profile updatedProfile = profileMapper.requestDtoToEntity(userRequestDto.getProfile());
+    
+            // Update only non-null fields to allow partial updates
+            if (updatedProfile.getFirstName() != null && !updatedProfile.getFirstName().isBlank()) {
+                user.getProfile().setFirstName(updatedProfile.getFirstName());
+            }
+            if (updatedProfile.getLastName() != null && !updatedProfile.getLastName().isBlank()) {
+                user.getProfile().setLastName(updatedProfile.getLastName());
+            }
+            if (updatedProfile.getEmail() != null && !updatedProfile.getEmail().isBlank()) {
+                user.getProfile().setEmail(updatedProfile.getEmail());
+            }
+        }
+    
+        // Save the updated user to the database
+        userRepository.save(user);
+    
+        // Restore the original joined timestamp to ensure it has not been modified
+        user.setJoined(originalJoinedDate);
+    
+        // Return the updated user as a response DTO
+        return userMapper.entityToDto(user);
+    }    
 
     @Override
-    public UserResponseDto getUserByUsername(@PathVariable String username) {
-    
+    public UserResponseDto getUserByUsername(String username) {
         // Validate the username first
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("Username can't be null or blank");
+            // Throw a BadRequestException if the username is null or blank
+            throw new BadRequestException("Username cannot be null or blank.");
         }
     
-        // Find the user in the database
+        // Find the user in the database and ensure they are active (not deleted)
         User user = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
     
-        // Check if the user exists
+        // Throw a NotFoundException if no active user is found with the given username
         if (user == null) {
-            throw new BadRequestException(String.format("User with username '%s' not found or is deleted.", username));
+            throw new NotFoundException(String.format("No active user found with username '%s'.", username));
         }
     
-        // Map and return the user entity as a DTO
+        // Map and return the user entity as a response DTO
         return userMapper.entityToDto(user);
     }
+    
 
     @Override
     public UserResponseDto deleteUser(String username, CredentialsDto credentialsDto) {
@@ -307,6 +338,79 @@ public class UserServiceImpl implements UserService {
                 .map(tweetMapper::entityToDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public void followUser(String username, CredentialsDto credentialsDto) {
+        // Validate credentials
+        if (credentialsDto == null || credentialsDto.getUsername() == null || credentialsDto.getPassword() == null) {
+            throw new BadRequestException("Valid credentials are required to follow a user.");
+        }
+    
+        // Find the user to be followed (must be active)
+        User userToFollow = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (userToFollow == null) {
+            throw new NotFoundException(String.format("User '%s' not found or inactive.", username));
+        }
+    
+        // Find the current user based on credentials (must be active)
+        User currentUser = userRepository.findByCredentialsUsernameAndDeletedFalse(credentialsDto.getUsername());
+        if (currentUser == null || !currentUser.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
+            throw new BadRequestException("Invalid credentials.");
+        }
+    
+        // Check if the user is already being followed
+        if (currentUser.getFollowing().contains(userToFollow)) {
+            throw new BadRequestException(String.format("User '%s' is already followed.", username));
+        }
+    
+        // Establish the follow relationship
+        currentUser.getFollowing().add(userToFollow);
+        userToFollow.getFollowers().add(currentUser);
+    
+        // Save both users to persist the relationship
+        userRepository.save(currentUser);
+        userRepository.save(userToFollow);
+    }
+    
+    
+    @Override
+    @Transactional
+    public void unfollowUser(String username, CredentialsDto credentialsDto) {
+        // Validate credentials
+        if (credentialsDto == null || credentialsDto.getUsername() == null || credentialsDto.getPassword() == null) {
+            throw new BadRequestException("Valid credentials are required to unfollow a user.");
+        }
+    
+        // Find the user to be unfollowed (must be active)
+        User userToUnfollow = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (userToUnfollow == null) {
+            throw new NotFoundException(String.format("User '%s' not found or inactive.", username));
+        }
+    
+        // Find the current user based on credentials (must be active)
+        User currentUser = userRepository.findByCredentialsUsernameAndDeletedFalse(credentialsDto.getUsername());
+        if (currentUser == null || !currentUser.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
+            throw new BadRequestException("Invalid credentials.");
+        }
+    
+        // Check if the user is not currently being followed
+        if (!currentUser.getFollowing().contains(userToUnfollow)) {
+            throw new BadRequestException(String.format("User '%s' is not currently followed.", username));
+        }
+    
+        // Remove the follow relationship
+        currentUser.getFollowing().remove(userToUnfollow);
+        userToUnfollow.getFollowers().remove(currentUser);
+    
+        // Save both users to persist the changes
+        userRepository.save(currentUser);
+        userRepository.save(userToUnfollow);
+    }
+    
+    
+
+
     
     
     
