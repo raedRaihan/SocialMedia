@@ -131,6 +131,8 @@ public class TweetServiceImpl implements TweetService {
 
 		List<Hashtag> hashtagsToSave = new ArrayList<>();
 		List<User> usersToSave = new ArrayList<>();
+		
+		savedTweet.setMentionedUsers(new ArrayList<>());
 
 		splitContent = tempSplitContent.toArray(new String[tempSplitContent.size()]);// did this to get rid of the
 																						// duplicates
@@ -138,10 +140,11 @@ public class TweetServiceImpl implements TweetService {
 			if (C.charAt(0) == '@') // @ user mentions
 			{
 				String userName = C.split("@")[1];
+				
 
 				for (User u : allUsers) {
 					if (u.getCredentials().getUsername().equals(userName)) {
-						u.getMentionedTweets().add(savedTweet);
+						savedTweet.getMentionedUsers().add(u);
 						usersToSave.add(u);
 
 					}
@@ -190,6 +193,7 @@ public class TweetServiceImpl implements TweetService {
 		userRepository.saveAllAndFlush(usersToSave);
 		TweetResponseDto tempReturn=tweetMapper.entityToDto(savedTweet);
 		tempReturn.setPosted(new Timestamp(date.getTime()));
+		
 
 		return tempReturn;
 	}
