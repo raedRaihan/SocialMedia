@@ -365,7 +365,10 @@ public class TweetServiceImpl implements TweetService {
 		Tweet targetTweet = optionalTweet.get();
 
 		ContextDto tempContext = new ContextDto();
+		
+		Date date = new Date();
 		tempContext.setTarget(tweetMapper.entityToDto(targetTweet));
+		tempContext.getTarget().setPosted(new Timestamp(date.getTime()));
 
 		List<TweetResponseDto> beforeTweets = new ArrayList<>();
 		List<TweetResponseDto> afterTweets = new ArrayList<>();
