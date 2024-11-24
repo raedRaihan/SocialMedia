@@ -33,7 +33,7 @@ public class HashtagServiceImpl implements HashtagService {
 
         // Fetch all tweets associated with a specific hashtag label
         @Override
-        public HashtagDto getTweetsByHashtagLabel(String label) {
+        public List<TweetResponseDto> getTweetsByHashtagLabel(String label) {
             // Find the hashtag by its label in the database
             Hashtag hashtag = hashtagRepository.findByLabel(label);
             if (hashtag == null) {
@@ -44,14 +44,9 @@ public class HashtagServiceImpl implements HashtagService {
             // Find all tweets associated with the hashtag, ordered by the most recent first
             List<Tweet> tweets = tweetRepository.findAllByHashtagAndDeletedFalseOrderByTimestampDesc(hashtag);
 
-            // Map the list of Tweet entities to TweetResponseDto objects
-            List<TweetResponseDto> tweetDtos = tweetMapper.entitiesToDtos(tweets);
+            
+            return tweetMapper.entitiesToDtos(tweets);
 
-            // Map the hashtag entity to a HashtagDto and set its associated tweets
-            HashtagDto hashtagDto = hashtagMapper.entityToDto(hashtag);
-            hashtagDto.setTweets(tweetDtos);
-
-            // Return the final DTO
-            return hashtagDto;
+            
         }
 }

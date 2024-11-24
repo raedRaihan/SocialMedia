@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cooksys.twitter_api.dtos.HashtagDto;
+import com.cooksys.twitter_api.dtos.TweetResponseDto;
 import com.cooksys.twitter_api.services.HashtagService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class HashtagController {
         }
 
         @GetMapping("/{label}")
-        public HashtagDto getTweetsByHashtag(@PathVariable String label) {
+        public List<TweetResponseDto> getTweetsByHashtag(@PathVariable String label) {
             return hashtagService.getTweetsByHashtagLabel(label);
         }
     }
